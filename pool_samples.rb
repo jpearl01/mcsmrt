@@ -345,8 +345,7 @@ def process_each_file (samps, log, all_bc_reads, table, table_2, ccs_hash)
 			size_filt_total = filt.lt_500bp+filt.gt_2000bp	
 			remains_after_size_filt = filt.og_count - size_filt_total
 			remains_after_human_mapping = remains_after_size_filt - filt.mapped
-			oriented_and_retrieved = filt.oriented + filt.singletons_retrieved
-			remains_after_primer_match_and_orienting = remains_after_human_mapping - oriented_and_retrieved
+			remains_after_primer_match_and_orienting= filt.oriented + filt.singletons_retrieved
 			table_2.puts("#{base_name}\t#{filt.og_count}\t#{remains_after_size_filt}\t#{remains_after_human_mapping}\t#{remains_after_primer_match_and_orienting}")
 		else
       		#log.puts("No file for sample #{id} barcode #{rec.barcode_num}")
