@@ -198,7 +198,7 @@ def create_half_primer_files (primer_file_path)
 end	
 
 #### Process each file from the tarred folder 	
-def process_each_file (samps, log, all_bc_reads, table, ccs_hash)
+def process_each_file (samps, log, all_bc_reads, table, table_2, ccs_hash)
 	samps.each do |rec|
     	log.puts("Pool: #{rec.pool} Barcode: #{rec.barcode_num}")
     	base_name = "#{rec.pool}_#{rec.barcode_num}_#{rec.site_id}_#{rec.patient}"
@@ -342,10 +342,16 @@ def process_each_file (samps, log, all_bc_reads, table, ccs_hash)
 	
       		# Write the filtered stats out to the log
       		table.puts("#{base_name}\t#{filt.og_count}\t#{filt.lt_500bp}\t#{filt.gt_2000bp}\t#{filt.mapped}\t#{filt.singletons}\t#{filt.more_than_2_primers}\t#{filt.double_primers_and_correct}\t#{filt.not_primer_matched_by_usearch}\t#{filt.oriented}\t#{filt.singletons_retrieved}\t#{filt.percentage_retrieved}")
-
+			size_filt_total = filt.lt_500bp+filt.gt_2000bp	
+			remains_after_size_filt = filt.og_count - size_filt_total
+			remains_after_human_mapping = remains_after_size_filt - filt.mapped
+			oriented_and_retrieved = filt.oriented + filt.singletons_retrieved
+			remains_after_primer_match_and_orienting = remains_after_human_mapping - oriented_and_retrieved
+			table_2.puts("#{base_name}\t#{filt.og_count}\t#{remains_after_size_filt}\t#{remains_after_human_mapping}\t#{remains_after_primer_match_and_orienting}")
 		else
       		#log.puts("No file for sample #{id} barcode #{rec.barcode_num}")
       		table.puts("#{base_name}\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0")
+			table_2.puts("#{base_name}\t0\t0\t0\t0")
 		end
 	end 
 end
@@ -382,6 +388,9 @@ log = File.open('log.txt', 'w')
 table = File.open("all_ee#{ee}_filter_sample_counts.txt", 'w')
 table.puts("sample\tog_count\tlt_500bp\tgt_2000bp\tmapped\tsingletons\tmore_than_2_primers\tdouble_primers_which_passed\tnot_primer_matched_by_usearch\toriented\tsingletons_retrieved\tpercentage_singletons_retrieved")
 
+table_2 = File.open("all_ee#{ee}_filter_sample_counts_summary.txt", 'w')
+table_2.puts("sample\tog_count\tremains_after_size_filt\tremains_after_human_mapping\tremains_after_primer_matching_and_orienting")
+
 # File with all original reads (>500 to <2000 in length)
 all_bc_reads = File.open("all_ee#{ee}_bc_reads_size_filt.fq", 'w')
 
@@ -394,7 +403,7 @@ pb_projects.each do |id, samps|
 	get_tarred_folder (id)
 	ccs_hash = get_ccs_counts (id)
 	#puts ccs_hash
-	process_each_file(samps, log, all_bc_reads, table, ccs_hash)
+	process_each_file(samps, log, all_bc_reads, table, table_2, ccs_hash)
 end
 
 # Calling the method which runs usearch and processes its output
