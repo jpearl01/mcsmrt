@@ -47,11 +47,12 @@ end
 #fh = File handle, header = read header (string), sequence = read sequence, quality = phred quality scores
 def write_to_fastq (fh, header, sequence, quality)
 
+=begin
   fh       = file handle
   header   = string
   sequence = string
   quality  = array
-
+=end
 	fh.write('@' + header + "\n")
 	fh.write(sequence)
 	fh.write("\n+\n")
