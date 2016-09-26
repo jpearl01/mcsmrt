@@ -1,4 +1,6 @@
+#!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
+
 require 'bio'
 require 'trollop'
 
@@ -15,15 +17,14 @@ opts = Trollop::options do
 end 
 
 ##### Assigning variables to the input
-sample_file = File.open(opts[:samplefile], "r")
-ee = opts[:eevalue]
-uchime_db_file = opts[:uchimedbfile]
-utax_db_file = opts[:utaxdbfile]
-lineage_fasta_file = opts[:lineagefastafile]
+opts[:samplefile].nil?       ==false  ? sample_file = opts[:samplefile]               : abort("Must supply a 'sample file': tab delimited file of sample information with '-s'")
+opts[:eevalue].nil?          ==false  ? ee = opts[:eevalue]                           : abort("Must supply an Expected Error value with '-e'")
+opts[:uchimedbfile].nil?     ==false  ? uchime_db_file = opts[:uchimedbfile]          : abort("Must supply a 'uchime database file' e.g. rdpgold.udb '-c'")
+opts[:utaxdbfile].nil?       ==false  ? utax_db_file = opts[:utaxdbfile]              : abort("Must supply a 'utax database file' e.g. 16s_ncbi.udb '-t'")
+opts[:lineagefastafile].nil? ==false  ? lineage_fasta_file = opts[:lineagefastafile]  : abort("Must supply a 'lineage fasta file' e.g. ncbi_lineage.fasta (for blast) '-l' ")
 
 ##### Making sure we got the inputs right
-abort("Can't open the sample pool file!") unless File.exists?(sample_file)
-abort("Need to enter the expected error: usage -> pool_samples.rb -s sample_key_file -e ee_value") if ee.nil?
+File.exists?(sample_file) ? sample_file = File.open(sample_file, 'r') : abort("Can't open the sample pool file!")
 
 ##### Class that stores information about each record from the sample key file
 class Barcode_16s_record
