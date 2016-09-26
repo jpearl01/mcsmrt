@@ -1,5 +1,7 @@
+# -*- coding: utf-8 -*-
 require 'bio'
 require 'trollop'
+
 
 #USAGE: ruby pool_samples.rb -s sample_key_BEI.txt -e 1 -c ../rdp_gold.fa -t ../16s_ncbi_database/16s_lineage_short_species_name_reference_database.udb -l ../16s_ncbi_database/16sMicrobial_ncbi_lineage.fasta
 
@@ -33,8 +35,22 @@ class Filtered_steps
 attr_accessor :og_count, :lt_500bp, :gt_2000bp, :mapped, :singletons, :more_than_2_primers, :double_primers_and_correct, :not_primer_matched_by_usearch, :oriented, :singletons_retrieved, :percentage_retrieved			
 end
 
+#Argument (string) is the argument to check, arg_class is the class it should be, method is the method is being called from
+def check_argument_type(argument, arg_class, method)
+  abort("Argument #{argument} should be #{arg_class} but is not, in method #{method}") unless argument.class == arg_class
+end
+
+
+
 ##### Method to write reads in fastq format
+#fh = File handle, header = read header (string), sequence = read sequence, quality = phred quality scores
 def write_to_fastq (fh, header, sequence, quality)
+
+  fh       = file handle
+  header   = string
+  sequence = string
+  quality  = array
+
 	fh.write('@' + header + "\n")
 	fh.write(sequence)
 	fh.write("\n+\n")
