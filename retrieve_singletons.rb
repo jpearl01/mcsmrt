@@ -61,8 +61,17 @@ out_file_rev.close
 # Run usearch on these 2 fasta files with half the primer which was not getting matched
 fow_basename = File.basename(opts[:outfile_fow], ".fastq")
 rev_basename = File.basename(opts[:outfile_rev], ".fastq")
+<<<<<<< HEAD
 `usearch -search_oligodb #{fow_basename}.fastq -db primer_half_rev.fasta -strand both -userout #{fow_basename}_map2.txt -userfields query+target+qstrand+diffs+tlo+thi+qlo+qhi`
 `usearch -search_oligodb #{rev_basename}.fastq -db primer_half_fow.fasta -strand both -userout #{rev_basename}_map2.txt -userfields query+target+qstrand+diffs+tlo+thi+qlo+qhi`
+=======
+if !File.zero?("#{fow_basename}.fastq")
+	`usearch -search_oligodb #{fow_basename}.fastq -db primer_half_rev.fasta -strand both -userout #{fow_basename}_map2.txt -userfields query+target+qstrand+diffs+tlo+thi+qlo+qhi`
+end
+if !File.zero?("#{rev_basename}.fastq")
+	`usearch -search_oligodb #{rev_basename}.fastq -db primer_half_fow.fasta -strand both -userout #{rev_basename}_map2.txt -userfields query+target+qstrand+diffs+tlo+thi+qlo+qhi`
+end
+>>>>>>> 7299319460854c9995da16a814b0a6d23dea2d5b
 
 # Read the map files and retrieve out the good sequences from it 
 fow_map = File.open("#{fow_basename}_map2.txt", "r")

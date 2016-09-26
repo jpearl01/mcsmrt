@@ -1,9 +1,5 @@
-#!/usr/bin/env ruby
-# -*- coding: utf-8 -*-
-
 require 'bio'
 require 'trollop'
-
 
 #USAGE: ruby pool_samples.rb -s sample_key_BEI.txt -e 1 -c ../rdp_gold.fa -t ../16s_ncbi_database/16s_lineage_short_species_name_reference_database.udb -l ../16s_ncbi_database/16sMicrobial_ncbi_lineage.fasta
 
@@ -17,15 +13,15 @@ opts = Trollop::options do
 end 
 
 ##### Assigning variables to the input
-opts[:samplefile].nil?       ==false  ? sample_file = opts[:samplefile]               : abort("Must supply a 'sample file': tab delimited file of sample information with '-s'")
-opts[:eevalue].nil?          ==false  ? ee = opts[:eevalue]                           : abort("Must supply an Expected Error value with '-e'")
-opts[:uchimedbfile].nil?     ==false  ? uchime_db_file = opts[:uchimedbfile]          : abort("Must supply a 'uchime database file' e.g. rdpgold.udb '-c'")
-opts[:utaxdbfile].nil?       ==false  ? utax_db_file = opts[:utaxdbfile]              : abort("Must supply a 'utax database file' e.g. 16s_ncbi.udb '-t'")
-opts[:lineagefastafile].nil? ==false  ? lineage_fasta_file = opts[:lineagefastafile]  : abort("Must supply a 'lineage fasta file' e.g. ncbi_lineage.fasta (for blast) '-l' ")
+sample_file = File.open(opts[:samplefile], "r")
+ee = opts[:eevalue]
+uchime_db_file = opts[:uchimedbfile]
+utax_db_file = opts[:utaxdbfile]
+lineage_fasta_file = opts[:lineagefastafile]
 
 ##### Making sure we got the inputs right
-File.exists?(sample_file) ? sample_file = File.open(sample_file, 'r') : abort("Can't open the sample pool file!")
-
+abort("Can't open the sample pool file!") unless File.exists?(sample_file)
+abort("Need to enter the expected error: usage -> pool_samples.rb -s sample_key_file -e ee_value") if ee.nil?
 
 ##### Class that stores information about each record from the sample key file
 class Barcode_16s_record
@@ -37,21 +33,8 @@ class Filtered_steps
 attr_accessor :og_count, :lt_500bp, :gt_2000bp, :mapped, :singletons, :more_than_2_primers, :double_primers_and_correct, :not_primer_matched_by_usearch, :oriented, :singletons_retrieved, :percentage_retrieved			
 end
 
-#Argument (string) is the argument to check, arg_class is the class it should be, method is the method is being called from
-def check_argument_type(argument, arg_class, method)
-  abort("Argument #{argument} should be #{arg_class} but is not, in method #{method}") unless argument.class == arg_class
-end
-
 ##### Method to write reads in fastq format
-#fh = File handle, header = read header (string), sequence = read sequence, quality = phred quality scores
 def write_to_fastq (fh, header, sequence, quality)
-
-=begin
-  fh       = file handle
-  header   = string
-  sequence = string
-  quality  = array
-=end
 	fh.write('@' + header + "\n")
 	fh.write(sequence)
 	fh.write("\n+\n")
@@ -215,7 +198,7 @@ def create_half_primer_files (primer_file_path)
 end	
 
 #### Process each file from the tarred folder 	
-def process_each_file (samps, log, all_bc_reads, table, table_2, ccs_hash)
+def process_each_file (samps, log, all_bc_reads, table, ccs_hash)
 	samps.each do |rec|
     	log.puts("Pool: #{rec.pool} Barcode: #{rec.barcode_num}")
     	base_name = "#{rec.pool}_#{rec.barcode_num}_#{rec.site_id}_#{rec.patient}"
@@ -359,20 +342,10 @@ def process_each_file (samps, log, all_bc_reads, table, table_2, ccs_hash)
 	
       		# Write the filtered stats out to the log
       		table.puts("#{base_name}\t#{filt.og_count}\t#{filt.lt_500bp}\t#{filt.gt_2000bp}\t#{filt.mapped}\t#{filt.singletons}\t#{filt.more_than_2_primers}\t#{filt.double_primers_and_correct}\t#{filt.not_primer_matched_by_usearch}\t#{filt.oriented}\t#{filt.singletons_retrieved}\t#{filt.percentage_retrieved}")
-			size_filt_total = filt.lt_500bp+filt.gt_2000bp	
-			remains_after_size_filt = filt.og_count - size_filt_total
-			remains_after_human_mapping = remains_after_size_filt - filt.mapped
-<<<<<<< HEAD
-			oriented_and_retrieved = filt.oriented + filt.singletons_retrieved
-			remains_after_primer_match_and_orienting = remains_after_human_mapping - oriented_and_retrieved
-=======
-			remains_after_primer_match_and_orienting= filt.oriented + filt.singletons_retrieved
->>>>>>> 7299319460854c9995da16a814b0a6d23dea2d5b
-			table_2.puts("#{base_name}\t#{filt.og_count}\t#{remains_after_size_filt}\t#{remains_after_human_mapping}\t#{remains_after_primer_match_and_orienting}")
+
 		else
       		#log.puts("No file for sample #{id} barcode #{rec.barcode_num}")
       		table.puts("#{base_name}\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0")
-			table_2.puts("#{base_name}\t0\t0\t0\t0")
 		end
 	end 
 end
@@ -409,9 +382,6 @@ log = File.open('log.txt', 'w')
 table = File.open("all_ee#{ee}_filter_sample_counts.txt", 'w')
 table.puts("sample\tog_count\tlt_500bp\tgt_2000bp\tmapped\tsingletons\tmore_than_2_primers\tdouble_primers_which_passed\tnot_primer_matched_by_usearch\toriented\tsingletons_retrieved\tpercentage_singletons_retrieved")
 
-table_2 = File.open("all_ee#{ee}_filter_sample_counts_summary.txt", 'w')
-table_2.puts("sample\tog_count\tremains_after_size_filt\tremains_after_human_mapping\tremains_after_primer_matching_and_orienting")
-
 # File with all original reads (>500 to <2000 in length)
 all_bc_reads = File.open("all_ee#{ee}_bc_reads_size_filt.fq", 'w')
 
@@ -424,7 +394,7 @@ pb_projects.each do |id, samps|
 	get_tarred_folder (id)
 	ccs_hash = get_ccs_counts (id)
 	#puts ccs_hash
-	process_each_file(samps, log, all_bc_reads, table, table_2, ccs_hash)
+	process_each_file(samps, log, all_bc_reads, table, ccs_hash)
 end
 
 # Calling the method which runs usearch and processes its output
