@@ -16,30 +16,41 @@ opts = Trollop::options do
 	opt :lineagefastafile, "Path of FASTA file with lineage info for the ublast command", :type => :string, :short => "-l"
 end 
 
-##### Assigning variables to the input
+##### Assigning variables to the input and making sure we got all the inputs
 opts[:samplefile].nil?       ==false  ? sample_file = opts[:samplefile]               : abort("Must supply a 'sample file': tab delimited file of sample information with '-s'")
 opts[:eevalue].nil?          ==false  ? ee = opts[:eevalue]                           : abort("Must supply an Expected Error value with '-e'")
 opts[:uchimedbfile].nil?     ==false  ? uchime_db_file = opts[:uchimedbfile]          : abort("Must supply a 'uchime database file' e.g. rdpgold.udb '-c'")
 opts[:utaxdbfile].nil?       ==false  ? utax_db_file = opts[:utaxdbfile]              : abort("Must supply a 'utax database file' e.g. 16s_ncbi.udb '-t'")
 opts[:lineagefastafile].nil? ==false  ? lineage_fasta_file = opts[:lineagefastafile]  : abort("Must supply a 'lineage fasta file' e.g. ncbi_lineage.fasta (for blast) '-l' ")
 
-##### Making sure we got the inputs right
+##### Making sure we can open the sample file
 File.exists?(sample_file) ? sample_file = File.open(sample_file, 'r') : abort("Can't open the sample pool file!")
 
 
 ##### Class that stores information about each record from the sample key file
 class Barcode_16s_record
-  attr_accessor :pool, :barcode_num, :site_id, :patient, :sample
+  	attr_accessor :pool, :barcode_num, :site_id, :patient, :sample
 end
 
 # Class that stores data about the reads
 class Filtered_steps
-attr_accessor :og_count, :lt_500bp, :gt_2000bp, :mapped, :singletons, :more_than_2_primers, :double_primers_and_correct, :not_primer_matched_by_usearch, :oriented, :singletons_retrieved, :percentage_retrieved			
+	attr_accessor :og_count, :lt_500bp, :gt_2000bp, :mapped, :singletons, :more_than_2_primers, :double_primers_and_correct, :not_primer_matched_by_usearch, :oriented, :singletons_retrieved, :percentage_retrieved			
+end
+
+# Class that stores data about ALL the reads (no filtering, no reads missing)
+class All_data_summary
+ def initialize()
+	@all_data_hash = Hash.new(false) 
+ end
+
+ def store(read_name, ccs, barcode)
+    @all_data_hash[read_name] = [ccs, barcode]
+ end
 end
 
 #Argument (string) is the argument to check, arg_class is the class it should be, method is the method is being called from
 def check_argument_type(argument, arg_class, method)
-  abort("Argument #{argument} should be #{arg_class} but is not, in method #{method}") unless argument.class == arg_class
+  	abort("Argument #{argument} should be #{arg_class} but is not, in method #{method}") unless argument.class == arg_class
 end
 
 ##### Method to write reads in fastq format
@@ -237,8 +248,11 @@ def process_each_file (samps, log, all_bc_reads, table, table_2, ccs_hash)
 		# Do the rest only if that fq file exits
     	if File.exists?(fq)
       		puts base_name
-       	           
-      		# Initialize log variable
+       	      
+			# Initialize variables in the All_data_summary    
+			non_filt = All_data_summary.new
+			
+      		# Initialize variables in the Filtered_steps class
       		filt = Filtered_steps.new
       		filt.og_count=0
       		filt.lt_500bp=0
@@ -269,6 +283,11 @@ def process_each_file (samps, log, all_bc_reads, table, table_2, ccs_hash)
         		filt.og_count  += 1
         		filt.lt_500bp  += 1 if entry.naseq.size < 500
         		filt.gt_2000bp += 1 if entry.naseq.size > 2000
+
+				non_filt.store(new_header, ccs, base_name)
+				puts non_filt.inspect
+			
+				
 			end
 
       		corrected.puts ""
@@ -362,12 +381,7 @@ def process_each_file (samps, log, all_bc_reads, table, table_2, ccs_hash)
 			size_filt_total = filt.lt_500bp+filt.gt_2000bp	
 			remains_after_size_filt = filt.og_count - size_filt_total
 			remains_after_human_mapping = remains_after_size_filt - filt.mapped
-<<<<<<< HEAD
-			oriented_and_retrieved = filt.oriented + filt.singletons_retrieved
-			remains_after_primer_match_and_orienting = remains_after_human_mapping - oriented_and_retrieved
-=======
 			remains_after_primer_match_and_orienting= filt.oriented + filt.singletons_retrieved
->>>>>>> 7299319460854c9995da16a814b0a6d23dea2d5b
 			table_2.puts("#{base_name}\t#{filt.og_count}\t#{remains_after_size_filt}\t#{remains_after_human_mapping}\t#{remains_after_primer_match_and_orienting}")
 		else
       		#log.puts("No file for sample #{id} barcode #{rec.barcode_num}")
