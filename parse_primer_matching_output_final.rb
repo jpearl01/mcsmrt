@@ -86,11 +86,6 @@ fastq_file.each do |entry|
     			out_file.puts("+")
     			out_file.puts(entry.quality_string[record_hash[definition][1][3]..record_hash[definition][0][2]])
 		end
-<<<<<<< HEAD
-=======
-	#elsif to_complement_hash[definition].nil?
-	#	puts "DANGER:#{definition}"
->>>>>>> 7299319460854c9995da16a814b0a6d23dea2d5b
 	end
   	if singletons[definition].eql?("Orient")
     		out_file_2.puts("@"+entry.definition.split(" ")[0])
