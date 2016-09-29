@@ -4,16 +4,15 @@
 require 'bio'
 require 'trollop'
 
-
 #USAGE: ruby pool_samples.rb -s sample_key_BEI.txt -e 1 -c ../rdp_gold.fa -t ../16s_ncbi_database/16s_lineage_short_species_name_reference_database.udb -l ../16s_ncbi_database/16sMicrobial_ncbi_lineage.fasta
 
 ##### Input 
 opts = Trollop::options do
   opt :samplefile, "File with all the sample information", :type => :string, :short => "-s"
   opt :eevalue, "Expected error at which you want filtering to take place", :type => :string, :short => "-e"
-  opt :uchimedbfile, "Path of database file for the uchime command", :type => :string, :short => "-c"
-  opt :utaxdbfile, "Path of database file for the utax command", :type => :string, :short => "-t"
-  opt :lineagefastafile, "Path of FASTA file with lineage info for the ublast command", :type => :string, :short => "-l"
+  opt :uchimedbfile, "Path to database file for the uchime command", :type => :string, :short => "-c"
+  opt :utaxdbfile, "Path to database file for the utax command", :type => :string, :short => "-t"
+  opt :lineagefastafile, "Path to FASTA file with lineage info for the ublast command", :type => :string, :short => "-l"
   opt :host_db, "Path to fasta file of host genome", :type => :string, :short => "-g"
 end 
 
@@ -29,6 +28,7 @@ opts[:host_db].nil?          ==false  ? human_db = opts[:host_db]               
 ##### Making sure we can open the sample file
 File.exists?(sample_file) ? sample_file = File.open(sample_file, 'r') : abort("Can't open the sample pool file!")
 
+##### Get the path to the directory in which the scripts exist 
 script_directory = File.dirname(__FILE__)
 
 ##### Class that stores information about each record from the sample key file
@@ -38,33 +38,20 @@ end
 
 # Class that stores data about the reads
 class Filtered_steps
-
-  attr_accessor :og_count, :lt_500bp, :gt_2000bp, :mapped, :singletons, :more_than_2_primers, :double_primers_and_correct, :not_primer_matched_by_usearch, :oriented, :singletons_retrieved, :percentage_retrieved			
-
-  def initialize()
-    @og_count=0
-    @lt_500bp=0
-    @gt_2000bp=0
-    @mapped=0
-    @singletons=0
-    @more_than_2_primers=0
-    @double_primers_and_correct=0
-    @not_primer_matched_by_usearch=0
-    @oriented=0
+  attr_accessor :og_count, :lt_500bp, :gt_2000bp, :mapped, :singletons, :more_than_2_primers, :double_primers_and_correct, :not_primer_matched_by_usearch, :oriented, :singletons_retrieved, :percentage_retrieved
+  
+	def initialize()
+    @og_count = 0
+    @lt_500bp = 0
+    @gt_2000bp = 0
+    @mapped = 0
+    @singletons = 0
+    @more_than_2_primers = 0
+    @double_primers_and_correct = 0
+    @not_primer_matched_by_usearch = 0
+    @oriented = 0
     @singletons_retrieved = 0
     @percentage_retrieved = 0
-  end
-
-end
-
-# Class that stores data about ALL the reads (no filtering, no reads missing)
-class All_data_summary
-  def initialize()
-    @all_data_hash = Hash.new(false) 
-  end
-  
-  def store(read_name, ccs, barcode)
-    @all_data_hash[read_name] = [read_name, ccs, barcode]
   end
 end
 
@@ -76,7 +63,6 @@ end
 ##### Method to write reads in fastq format
 #fh = File handle, header = read header (string), sequence = read sequence, quality = phred quality scores
 def write_to_fastq (fh, header, sequence, quality)
-
 =begin
   fh       = file handle
   header   = string
@@ -105,6 +91,7 @@ def num_of_projects (sample_file)
     pb_projects[arr.last].push(rec)
   end
   puts "Sanity check, number of projects are: " + pb_projects.count.to_s
+	#puts pb_projects.inspect
   return pb_projects
 end
 
@@ -146,6 +133,8 @@ def map_to_human_genome (base_name, human_db)
   #filter the bam for only ‘not unmapped’ reads -> reads that are mapped                                                                                 
   `sambamba view -F 'not unmapped' corrected.bam > #{base_name}_mapped.txt`
   mapped_count = `cut -d ';' -f1 #{base_name}_mapped.txt| sort | uniq | wc -l`
+	mapped_array = []
+	mapped_array.push(`cut -d ';' -f1 #{base_name}_mapped.txt`)
   
   #filter reads out for ‘unmapped’ -> we would use these for 16s id pipeline                                                                             
   `sambamba view -F 'unmapped' corrected.bam > #{base_name}_unmapped.txt`
@@ -153,7 +142,7 @@ def map_to_human_genome (base_name, human_db)
   #convert the sam file to fastq                                                                                                                         
   `grep -v ^@ #{base_name}_unmapped.txt | awk '{print \"@\"$1\"\\n\"$10\"\\n+\\n\"$11}' > corrected_final.fastq`
   
-  return mapped_count
+  return mapped_count, mapped_array
 end
 
 ##### Method for primer matching 
@@ -268,48 +257,74 @@ def process_each_file (samps, log, all_bc_reads, table, table_2, ccs_hash, human
     # Do the rest only if that fq file exits
     if File.exists?(fq)
       puts base_name
-      
-      # Initialize variables in the All_data_summary    
-      non_filt = All_data_summary.new
-      
+			
       # Initialize variables in the Filtered_steps class
       filt = Filtered_steps.new
       
       # Add in the barcode to the fastq header
       corrected = File.open('corrected.fq', 'w')
       fh = Bio::FlatFile.auto(fq)
-      
+			
+			# Hash to store All_data_summary info      
+			non_filt_hash = {}
+
       fh.each do |entry|
-        new_header = entry.definition.split[0]
+				# Initialize variables in the All_data_summary   
+				#non_filt = All_data_summary.new			
+				
+				new_header_raw = entry.definition.split[0]
+				#puts new_header_raw @read_name = ""
+
+				non_filt_hash[new_header_raw] = [0,"","",0.0,0.0,0,0,false,0,0,""] 
+				# Storing things in All_data_summary class
+    		#non_filt.read_name = new_header_raw
+				#non_filt.sample = rec.patient
+				#non_filt.barcode = rec.barcode_num
+      
         if ccs_hash.has_key?(entry.definition.split[0])
+					#non_filt.ccs = ccs_hash[entry.definition.split[0]].to_i #Storing ccs count in All_data_summary class
           ccs = "ccs=#{ccs_hash[entry.definition.split[0]]};"
-          new_header = new_header + ";" + bc + ccs
+          new_header = new_header_raw + ";" + bc + ccs
         else
           ccs = "ccs=nil;"
-          new_header = new_header + ";" + bc + ccs
+          new_header = new_header_raw + ";" + bc + ccs
         end
         
         write_to_fastq(corrected, "#{new_header}", entry.naseq.upcase, entry.quality_string) unless entry.naseq.size > 2000 || entry.naseq.size < 500
-        write_to_fastq(all_bc_reads, "#{new_header}", entry.naseq.upcase, entry.quality_string) unless entry.naseq.size > 2000 || entry.naseq.size < 500
+        write_to_fastq(all_bc_reads, "#{new_header}", entry.naseq.upcase, entry.quality_string) 
         filt.og_count  += 1
         filt.lt_500bp  += 1 if entry.naseq.size < 500
         filt.gt_2000bp += 1 if entry.naseq.size > 2000
-        
-        non_filt.store(new_header, ccs, base_name)
-#        puts non_filt.inspect
-        
-        
+
+				#non_filt.length_pretrim = entry.naseq.size # Storing length_pretrim in All_data_summary class
+				#non_filt_hash[new_header_raw].push(non_filt) # Pushing everything to the array in the hash
+
+				non_filt_hash[new_header_raw][0] = new_header_raw
+				non_filt_hash[new_header_raw][1] = ccs_hash[entry.definition.split[0]].to_i
+				non_filt_hash[new_header_raw][2] = rec.barcode_num
+				non_filt_hash[new_header_raw][3] = rec.patient
+				non_filt_hash[new_header_raw][6] = entry.naseq.size
       end
-      
+
+			#puts non_filt_hash.inspect
+			#puts non_filt_hash["m151002_181152_42168_c100863312550000001823190302121650_s1_p0/33720/ccs"].inspect
+			
       corrected.puts ""
       corrected.close
       File.delete(fq)
       
       # Calling the method which does human genome mapping
-      mapped_count = map_to_human_genome(base_name, human_db) 
+      mapped_count, mapped_array = map_to_human_genome(base_name, human_db) 
       filt.mapped = mapped_count.to_i
+			(0..mapped_array.length-1).each do |each_mapped_read|
+				header = mapped_array[each_mapped_read].strip
+				non_filt_hash[header][7] = true
+				#non_filt.host_map = true
+			end 
+			#puts non_filt_hash.inspect
+			#puts non_filt_hash["m151002_181152_42168_c100863312550000001823190302121650_s1_p0/33720/ccs"].inspect
       
-      # Calling the method for primer matching and getting statistics from it  
+			# Calling the method for primer matching and getting statistics from it  
       count_1, count_more_than_2, count_2_and_correct = primer_match(base_name)
       filt.singletons = count_1
       filt.more_than_2_primers = count_more_than_2
