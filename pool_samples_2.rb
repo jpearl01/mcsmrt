@@ -8,6 +8,7 @@ require 'trollop'
 
 ##### Input 
 opts = Trollop::options do
+	opt :outputfile, "Output file which has all the reads in it, the base name of this file is used to generate all other output files", :type => :string, :short => "-o"
   opt :samplefile, "File with all the sample information", :type => :string, :short => "-s"
   opt :eevalue, "Expected error at which you want filtering to take place", :type => :string, :short => "-e"
   opt :uchimedbfile, "Path to database file for the uchime command", :type => :string, :short => "-c"
@@ -17,6 +18,7 @@ opts = Trollop::options do
 end 
 
 ##### Assigning variables to the input and making sure we got all the inputs
+opts[:outputfile].nil?       ==false  ? output_file = opts[:outputfile]               : abort("Must supply an 'output file' which is the name of the fq file with all the reads from the jobs given in the sample sheet with '-o'")
 opts[:samplefile].nil?       ==false  ? sample_file = opts[:samplefile]               : abort("Must supply a 'sample file': tab delimited file of sample information with '-s'")
 opts[:eevalue].nil?          ==false  ? ee = opts[:eevalue]                           : abort("Must supply an Expected Error value with '-e'")
 opts[:uchimedbfile].nil?     ==false  ? uchime_db_file = opts[:uchimedbfile]          : abort("Must supply a 'uchime database file' e.g. rdpgold.udb '-c'")
@@ -101,8 +103,11 @@ def get_ccs_counts (id)
   return ccs_hash
 end
 
-#### Process each file from the tarred folder and get one file with all the reads
-def process_each_file (samps, log, all_bc_reads, ccs_hash)
+##### Process each file from the tarred folder and get one file with all the reads
+def process_each_file (samps, log, output_file, ccs_hash)
+	# Opening the file with all original reads for writing
+	all_bc_reads = File.open(output_file, 'w')
+
   samps.each do |rec|
     log.puts("Pool: #{rec.pool} Barcode: #{rec.barcode_num}")
     base_name = "#{rec.pool}_#{rec.barcode_num}_#{rec.site_id}_#{rec.patient}"
@@ -126,11 +131,9 @@ def process_each_file (samps, log, all_bc_reads, ccs_hash)
       puts base_name
       
       # Add in the barcode and ccs count to the fastq header
-      fh = Bio::FlatFile.auto(fq)
-			
+      fh = Bio::FlatFile.auto(fq)			
       fh.each do |entry|
 				new_header_raw = entry.definition.split[0]
-      
         if ccs_hash.has_key?(entry.definition.split[0])
           ccs = "ccs=#{ccs_hash[entry.definition.split[0]]};"
           new_header = new_header_raw + ";" + bc + ccs
@@ -139,15 +142,26 @@ def process_each_file (samps, log, all_bc_reads, ccs_hash)
           new_header = new_header_raw + ";" + bc + ccs
         end
         
+        # Write all the reads into the output file which was provided
         write_to_fastq(all_bc_reads, "#{new_header}", entry.naseq.upcase, entry.quality_string) 
 			end
+			
+			# Delete the individual fq files
+			File.delete(fq)	
 		end
+		
 	end
+	
+	# Close the file in which all the reads were written
+	all_bc_reads.close
 end
 
-# Work with the file which has all the reads
-def process_all_bc_reads_file (all_bc_reads_to_process, all_reads_hash)
-	all_bc_reads_to_process.each do |entry|
+##### Work with the file which has all the reads
+def process_all_bc_reads_file (output_file, all_reads_hash, ee, human_db)
+	# Opening the file with all original reads for writing with bio module
+	all_bc_reads = Bio::FlatFile.auto(output_file)
+	
+	all_bc_reads.each do |entry|
 		# Fill the all_bc_hash with some basic info that we can get (read_name, barcode, ccs, length_pretrim)
 		def_split = entry.definition.split(";")
 		read_name = def_split[0]
@@ -158,24 +172,81 @@ def process_all_bc_reads_file (all_bc_reads_to_process, all_reads_hash)
 		all_reads_hash[read_name][1] = ccs
 		all_reads_hash[read_name][2] = barcode
 		all_reads_hash[read_name][6] = entry.naseq.size
-
-		# Get ee_pretrim
-		# Call the get_ee_from_fq_file method
-
 	end	
+
+	# Get ee_pretrim
+	ee_pretrim_hash = get_ee_from_fq_file(output_file, ee, "ee_pretrim.fq")
+	#puts ee_pretrim_hash
+	ee_pretrim_hash.each do |k, v|
+		all_reads_hash[k][4] = v
+	end
+	
+	########## CHECK THIS
+	# Get the seqs which map to the host genome
+  mapped_count, mapped_array = map_to_human_genome(output_file, human_db) 
+  #filt.mapped = mapped_count.to_i
+  puts mapped_array
+	#all_reads_hash.each do |k, v|
+	#	if mapped_array.include?(k)
+	#		puts k, v
+	#	end	
+	#end
+	
 end
 
-# Make this a generic method whcih takes an fq file as argument and returns a hash with the read name and ee
-def get_ee_from_fq_file (file)
-	`usearch -fastq_filter #{file} -fastqout #{} -fastq_maxee #{ee} -fastq_qmax 75 -fastq_eeout -sample all`
+##### Method whcih takes an fq file as argument and returns a hash with the read name and ee
+def get_ee_from_fq_file (file, ee, suffix)
+	file_basename = File.basename(file, ".*")
+	
+	#puts file_basename
+	`usearch -fastq_filter #{file} -fastqout #{file_basename}_#{suffix} -fastq_maxee 20000 -fastq_qmax 75 -fastq_eeout -sample all`
+	
+	# Hash that is returned from this method (read name - key, ee - value)
+	ee_hash = {}
+	
+	# Open the file from fastq_filter command and process it
+	ee_filt_file = Bio::FlatFile.auto("#{file_basename}_#{suffix}")
+	ee_filt_file.each do |entry|
+		entry_def_split = entry.definition.split(";")
+		read_name = entry_def_split[0].split("@")[0]
+		ee = entry.definition.match(/ee=(.*);/)[1]
+		ee_hash[read_name] = ee.to_f
+	end
+	
+	return ee_hash
+end
+
+##### Mapping reads to the human genome
+def map_to_human_genome (file, human_db)   
+	file_basename = File.basename(file, ".*")
+	                                                                                                            
+  #align all reads to the human genome                                                                                                                   
+  `bwa mem -t 15 #{human_db} #{file} > #{file_basename}_host_map.sam`
+  
+  #sambamba converts sam to bam format                                                                                                                   
+  `sambamba view -S -f bam #{file_basename}_host_map.sam -o #{file_basename}_host_map.bam`
+  
+  #Sort the bam file                                                                                                                                     
+  `sambamba sort -t15 -o #{file_basename}_host_map_sorted.bam #{file_basename}_host_map.bam`
+  
+  #filter the bam for only ‘not unmapped’ reads -> reads that are mapped                                                                                 
+  `sambamba view -F 'not unmapped' #{file_basename}_host_map.bam > #{file_basename}_host_map_mapped.txt`
+  mapped_count = `cut -d ';' -f1 #{file_basename}_host_map_mapped.txt| sort | uniq | wc -l`
+	mapped_array = []
+	mapped_array.push(`cut -d ';' -f1 #{file_basename}_host_map_mapped.txt`)
+  
+  #filter reads out for ‘unmapped’ -> we would use these for pipeline                                                                             
+  `sambamba view -F 'unmapped' #{file_basename}_host_map.bam > #{file_basename}_host_map_unmapped.txt`
+  
+  #convert the sam file to fastq                                                                                                                         
+  `grep -v ^@ #{file_basename}_host_map_unmapped.txt | awk '{print \"@\"$1\"\\n\"$10\"\\n+\\n\"$11}' > #{file_basename}_host_map_unmapped.fq`
+  
+  return mapped_count, mapped_array
 end
 
 # Creating the files which are output by this script
 # Lets make a log file for some stuff
 log = File.open('log.txt', 'w')
-
-# File with all original reads
-all_bc_reads = File.open("all_ee#{ee}_bc.fq", 'w')
 
 # Calling the method which counts the number of projects in the sample file
 pb_projects = num_of_projects(sample_file)
@@ -186,13 +257,12 @@ pb_projects.each do |id, samps|
   get_tarred_folder (id)
   ccs_hash = get_ccs_counts (id)
   #puts ccs_hash
-  process_each_file(samps, log, all_bc_reads, ccs_hash)
+  process_each_file(samps, log, output_file, ccs_hash)
 end
 
 all_reads_hash = {}
-all_bc_reads_to_process = Bio::FlatFile.auto("all_ee#{ee}_bc.fq")
-process_all_bc_reads_file(all_bc_reads_to_process, all_reads_hash)
-puts all_reads_hash
+process_all_bc_reads_file(output_file, all_reads_hash, ee, human_db)
+#puts all_reads_hash
 
 
 

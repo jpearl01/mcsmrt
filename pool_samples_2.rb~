@@ -145,6 +145,7 @@ def process_each_file (samps, log, all_bc_reads, ccs_hash)
 	end
 end
 
+# Work with the file which has all the reads
 def process_all_bc_reads_file (all_bc_reads_to_process, all_reads_hash)
 	all_bc_reads_to_process.each do |entry|
 		# Fill the all_bc_hash with some basic info that we can get (read_name, barcode, ccs, length_pretrim)
@@ -159,12 +160,13 @@ def process_all_bc_reads_file (all_bc_reads_to_process, all_reads_hash)
 		all_reads_hash[read_name][6] = entry.naseq.size
 
 		# Get ee_pretrim
-		
+		# Call the get_ee_from_fq_file method
 
 	end	
 end
 
-def get_ee_from_a_fq_file (file)
+# Make this a generic method whcih takes an fq file as argument and returns a hash with the read name and ee
+def get_ee_from_fq_file (file)
 	`usearch -fastq_filter #{file} -fastqout #{} -fastq_maxee #{ee} -fastq_qmax 75 -fastq_eeout -sample all`
 end
 
