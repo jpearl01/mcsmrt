@@ -8,7 +8,7 @@ require 'trollop'
 
 ##### Input 
 opts = Trollop::options do
-	opt :outputfile, "Output file which has all the reads in it, the base name of this file is used to generate all other output files", :type => :string, :short => "-o"
+  opt :outputfile, "Output file which has all the reads in it, the base name of this file is used to generate all other output files", :type => :string, :short => "-o"
   opt :samplefile, "File with all the sample information", :type => :string, :short => "-s"
   opt :eevalue, "Expected error at which you want filtering to take place", :type => :string, :short => "-e"
   opt :uchimedbfile, "Path to database file for the uchime command", :type => :string, :short => "-c"
@@ -36,6 +36,15 @@ script_directory = File.dirname(__FILE__)
 ##### Class that stores information about each record from the sample key file
 class Barcode_16s_record
   attr_accessor :pool, :barcode_num, :site_id, :patient, :sample
+end
+
+class Read_sequence
+  attr_accessor :read_name, :basename, :ccs,:barcode, :sample, :ee_pretrim, :ee_posttrim, :length_pretrim, :length_posttrim, :host_map, :f_primer_matches, :r_primer_matches, :read_orientation
+
+  def initialize
+    :read_name, :basename, :ccs,:barcode, :sample, :ee_pretrim, :ee_posttrim, :length_pretrim, :length_posttrim, :host_map, :f_primer_matches, :r_primer_matches
+    :read_orientation
+  end
 end
 
 #### Method to make sure the arguments given to a method are of the right type
@@ -105,8 +114,8 @@ end
 
 ##### Process each file from the tarred folder and get one file with all the reads
 def process_each_file (samps, log, output_file, ccs_hash)
-	# Opening the file with all original reads for writing
-	all_bc_reads = File.open(output_file, 'w')
+  # Opening the file with all original reads for writing
+  all_bc_reads = File.open(output_file, 'w')
 
   samps.each do |rec|
     log.puts("Pool: #{rec.pool} Barcode: #{rec.barcode_num}")
@@ -165,33 +174,39 @@ def process_all_bc_reads_file (output_file, all_reads_hash, ee, human_db)
 		# Fill the all_bc_hash with some basic info that we can get (read_name, barcode, ccs, length_pretrim)
 		def_split = entry.definition.split(";")
 		read_name = def_split[0]
-		barcode = def_split[1].split("=")[1]
+		basename = def_split[1].split("=")[1]
+		barcode = def_split[1].split("=")[1].split("_")[1]
+		patient = def_split[1].split("=")[1].split("_")[4]
 		ccs = def_split[2].split("=")[1].to_i
 		all_reads_hash[read_name] = Array.new(12)
 		all_reads_hash[read_name][0] = read_name
 		all_reads_hash[read_name][1] = ccs
-		all_reads_hash[read_name][2] = barcode
-		all_reads_hash[read_name][6] = entry.naseq.size
+		all_reads_hash[read_name][2] = basename
+		all_reads_hash[read_name][3] = barcode
+		all_reads_hash[read_name][4] = patient
+		all_reads_hash[read_name][7] = entry.naseq.size
 	end	
 
 	# Get ee_pretrim
 	ee_pretrim_hash = get_ee_from_fq_file(output_file, ee, "ee_pretrim.fq")
 	#puts ee_pretrim_hash
 	ee_pretrim_hash.each do |k, v|
-		all_reads_hash[k][4] = v
+		all_reads_hash[k][5] = v
 	end
 	
-	########## CHECK THIS
 	# Get the seqs which map to the host genome
   mapped_count, mapped_array = map_to_human_genome(output_file, human_db) 
   #filt.mapped = mapped_count.to_i
-  puts mapped_array
-	#all_reads_hash.each do |k, v|
-	#	if mapped_array.include?(k)
-	#		puts k, v
-	#	end	
-	#end
-	
+  #puts mapped_array.inspect
+	all_reads_hash.each do |k, v|
+		if mapped_array.include?(k)
+			all_reads_hash[k][9] = true
+		else
+			all_reads_hash[k][9] = false
+		end	
+	end
+	#puts all_reads_hash["m151002_181152_42168_c100863312550000001823190302121650_s1_p0/33720/ccs"]
+
 end
 
 ##### Method whcih takes an fq file as argument and returns a hash with the read name and ee
@@ -233,7 +248,8 @@ def map_to_human_genome (file, human_db)
   `sambamba view -F 'not unmapped' #{file_basename}_host_map.bam > #{file_basename}_host_map_mapped.txt`
   mapped_count = `cut -d ';' -f1 #{file_basename}_host_map_mapped.txt| sort | uniq | wc -l`
 	mapped_array = []
-	mapped_array.push(`cut -d ';' -f1 #{file_basename}_host_map_mapped.txt`)
+	to_push = `cut -d ';' -f1 #{file_basename}_host_map_mapped.txt`
+	mapped_array.push(to_push.strip)
   
   #filter reads out for ‘unmapped’ -> we would use these for pipeline                                                                             
   `sambamba view -F 'unmapped' #{file_basename}_host_map.bam > #{file_basename}_host_map_unmapped.txt`
@@ -262,7 +278,7 @@ end
 
 all_reads_hash = {}
 process_all_bc_reads_file(output_file, all_reads_hash, ee, human_db)
-#puts all_reads_hash
+#puts all_reads_hash.length
 
 
 

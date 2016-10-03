@@ -72,7 +72,7 @@ fastq_file.each do |entry|
     			out_file.puts("+")
     			out_file.puts(entry.quality_string[record_hash[definition][0][3]..record_hash[definition][1][2]])
 		end
-  elsif to_complement_hash[definition].eql?("Orient")
+  	elsif to_complement_hash[definition].eql?("Orient")
 		if record_hash[definition][0][0].eql?("reverse")
 			#puts "ONE #{record_hash[definition][0][3]} to #{record_hash[definition][1][2]}"
     			out_file.puts("@"+entry.definition.split(" ")[0])
