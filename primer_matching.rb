@@ -1,18 +1,28 @@
 require 'trollop'
+require 'bio'
 
-#ruby retrieve_singletons.rb -f reads_of_insert_without_barcodes_singletons.fasta -p reads_of_insert_without_barcodes_singletons_primer_map.txt -w reads_of_insert_without_barcodes_singletons_primer_map_forward.fasta -r reads_of_insert_without_barcodes_singletons_primer_map_reverse.fasta -o retrieved_singleton_seqs.fasta
+#ruby ../mcsmrt_mod/primer_matching.rb -p all_bc_reads_forward_missing_primer_map.txt -o test_primer_matching.txt -a all_bc_reads.fq
+
 
 opts = Trollop::options do
 	opt :primerfile, "USEARCH results file after running the search_oligodb command", :type => :string, :short => "-p"
+  opt :allreadsfile, "File with all the reads", :type => :string, :short => "a"
 	opt :outfile, "Output file which will have all the information from primer matching", :type => :string, :short => "-o"
 end
 #puts opts
 
 abort("!!!!The primer matching results file does not exist!!!!") if !File.exists?(opts[:primerfile])
+abort("!!!!The primer matching results file does not exist!!!!") if !File.exists?(opts[:allreadsfile])
 
 primer_file = File.open(opts[:primerfile], "r")
+all_reads_file = Bio::FlatFile.auto(opts[:allreadsfile], "r") 
 out_file = File.open(opts[:outfile], "w")
 out_file.puts("read_name\tforward_primer_match\treverse_primer_match\tforward_primer_start\tforward_primer_end\treverse_primer_start\treverse_primer_end\tread_orientation\tprimer_note")
+
+seqs_hash = {}
+all_reads_file.each do |entry|
+  seqs_hash[entry.definition.split(";")[0]] = entry.naseq.upcase
+end
 
 class Primer_info
   attr_accessor :f_primer_matches, :r_primer_matches, :f_primer_start, :f_primer_end, :r_primer_start, :r_primer_end, :read_orientation, :primer_note
@@ -46,7 +56,7 @@ def parse_primer_file (primer_file)
 	return record_hash                                                                                                                                     
 end 
 
-def print_info (record_hash, primer_hash, out_file)
+def print_info (record_hash, primer_hash, out_file, seqs_hash)
 	record_hash.each do |key, value|
 		primer_hash[key] = Primer_info.new
   		# When size of value == 2, exactly one primer pair is matched
@@ -101,28 +111,68 @@ def print_info (record_hash, primer_hash, out_file)
   			end
 
       elsif value.size > 2
-        if value[0][0].eql?("reverse") and value[1][0].eql?("forward")
-          primer_hash[key].r_primer_matches = true 
-          primer_hash[key].f_primer_matches = true 
-          primer_hash[key].f_primer_start   = value[1][2].to_i
-          primer_hash[key].f_primer_end     = value[1][3].to_i
-          primer_hash[key].r_primer_start   = value[0][2].to_i
-          primer_hash[key].r_primer_end     = value[0][3].to_i
-          if value[1][1] == "+"
-            primer_hash[key].read_orientation = "+"
-          else
-            primer_hash[key].read_orientation = "-"
-          end
-          primer_hash[key].primer_note = "multiple_primers_hits"
+        fow_ind = nil
+        rev_ind = nil
+        value.each_with_index do |each_hit, index|
+          #puts each_hit.inspect
+          #puts seqs_hash[key].length
+          if each_hit[0].eql?("forward")
+            if fow_ind == nil
+              fow_ind = index
+            else
+              if each_hit[1] == "+" and each_hit[2] <= 100
+                fow_ind_pos = value[fow_ind][2]
+                cur_pos = each_hit[2]
+                if fow_ind_pos < cur_pos
+                  next
+                else
+                  fow_ind = index
+                end
+              elsif each_hit[1] == "-" and each_hit[2] >= seqs_hash[key].length - 100
+                fow_ind_pos = value[fow_ind][2]
+                cur_pos = each_hit[2]
+                if fow_ind_pos > cur_pos
+                  next
+                else
+                  fow_ind = index
+                end
+              end
+            end
 
-        elsif value[0][0].eql?("forward") and value[1][0].eql?("reverse")
+          else # meaning its reverse
+            if rev_ind == nil
+              rev_ind = index
+            else
+              if each_hit[1] == "+" and each_hit[2] <= 100
+                rev_ind_pos = value[rev_ind][2]
+                cur_pos = each_hit[2]
+                if rev_ind_pos < cur_pos
+                  next
+                else
+                  rev_ind = index
+                end
+              elsif each_hit[1] == "-" and each_hit[2] >= seqs_hash[key].length - 100
+                rev_ind_pos = value[rev_ind][2]
+                cur_pos = each_hit[2]
+                if rev_ind_pos > cur_pos
+                  next
+                else
+                  rev_ind = index
+                end
+              end
+            end
+          end
+        end
+        #puts key, fow_ind, rev_ind
+
+        if fow_ind != nil and rev_ind != nil
           primer_hash[key].r_primer_matches = true 
           primer_hash[key].f_primer_matches = true 
-          primer_hash[key].f_primer_start   = value[0][2].to_i
-          primer_hash[key].f_primer_end     = value[0][3].to_i
-          primer_hash[key].r_primer_start   = value[1][2].to_i
-          primer_hash[key].r_primer_end     = value[1][3].to_i
-          if value[0][1] == "+"
+          primer_hash[key].f_primer_start   = value[fow_ind][2].to_i
+          primer_hash[key].f_primer_end     = value[fow_ind][3].to_i
+          primer_hash[key].r_primer_start   = value[rev_ind][2].to_i
+          primer_hash[key].r_primer_end     = value[rev_ind][3].to_i
+          if value[fow_ind][1] == "+"
             primer_hash[key].read_orientation = "+"
           else
             primer_hash[key].read_orientation = "-"
@@ -169,7 +219,7 @@ def print_info (record_hash, primer_hash, out_file)
   			end
   		end
   		
-  		out_file.puts("#{key}\t#{primer_hash[key].f_primer_matches}\t#{primer_hash[key].r_primer_matches}\t#{primer_hash[key].f_primer_start}\t#{primer_hash[key].f_primer_end}\t#{primer_hash[key].r_primer_start}\t#{primer_hash[key].r_primer_end}\t#{primer_hash[key].read_orientation}\t#{primer_hash[key].primer_note}")
+  	out_file.puts("#{key}\t#{primer_hash[key].f_primer_matches}\t#{primer_hash[key].r_primer_matches}\t#{primer_hash[key].f_primer_start}\t#{primer_hash[key].f_primer_end}\t#{primer_hash[key].r_primer_start}\t#{primer_hash[key].r_primer_end}\t#{primer_hash[key].read_orientation}\t#{primer_hash[key].primer_note}")
 
   	end
   	#puts primer_hash["m151002_181152_42168_c100863312550000001823190302121650_s1_p0/85/ccs"].inspect #test for singleton forward
@@ -180,4 +230,4 @@ end
 primer_hash = {}
 record_hash = parse_primer_file(primer_file)
 #puts record_hash.length
-print_info(record_hash, primer_hash, out_file)
+print_info(record_hash, primer_hash, out_file, seqs_hash)
