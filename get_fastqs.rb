@@ -1,7 +1,7 @@
 require 'bio'
 require 'trollop'
 
-#USAGE: ruby get_fastqs.rb -s #{sample_key_file} -o #{all_bc_reads_output_folder} 
+#USAGE: ruby ../mcsmrt_mod/get_fastqs.rb -s #{sample_key_file} -o #{all_bc_reads_output_folder} 
 
 ##### Input 
 opts = Trollop::options do
@@ -143,7 +143,11 @@ def process_each_file (samps, log, output_folder, ccs_hash)
   	# Loop through each sample pointing to a job id
   	samps[1].each do |rec|
   		# Opening the file with the original reads are written along with the extra info
-  		all_bc_reads = File.open("#{output_folder}/#{rec.sample}.fq", "w")	
+  		if File.exists?("#{output_folder}/#{rec.sample}.fq")
+  			abort("Unique sample names must be provided. Sample name #{rec.sample} exists multiple times.")
+  		else
+  			all_bc_reads = File.open("#{output_folder}/#{rec.sample}.fq", "w")
+  		end
 
   		barcode_num = barcode_hash["#{rec.fow_barcode}--#{rec.rev_barcode}"]
     	base_name = "#{barcode_num}_#{rec.sample}"

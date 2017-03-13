@@ -167,7 +167,7 @@ def primer_match (script_directory, file_basename, primer_file)
   `usearch -search_oligodb #{file_basename}.fq -db #{primer_file} -strand both -userout #{file_basename}_primer_map.txt -userfields query+target+qstrand+diffs+tlo+thi+qlo+qhi`                                                                                                    
 
   # Run the script which parses the primer matching output
-  `ruby #{script_directory}/primer_matching.rb -p #{file_basename}_primer_map.txt -o #{file_basename}_primer_info.txt` 
+  `ruby #{script_directory}/primer_matching.rb -p #{file_basename}_primer_map.txt -o #{file_basename}_primer_info.txt -a #{file_basename}.fq` 
   	
   # Open the file with parsed primer matching results
   "#{file_basename}_primer_info.txt".nil? ==false  ? primer_matching_parsed_file = File.open("#{file_basename}_primer_info.txt") : abort("Primer mapping parsed file was not created from primer_matching.rb")
@@ -266,8 +266,8 @@ def retrieve_singletons (script_directory, seqs_hash, singletons_hash, file_base
   `usearch -search_oligodb #{file_basename}_singletons_reverse_missing.fq -db primer_half_rev.fasta -strand both -userout #{file_basename}_reverse_missing_primer_map.txt -userfields query+target+qstrand+diffs+tlo+thi+qlo+qhi`
 
   # Run the primer matching script on these 2 primer matching results
-  `ruby #{script_directory}/primer_matching.rb -p #{file_basename}_forward_missing_primer_map.txt -o #{file_basename}_forward_missing_primer_info.txt` 
-  `ruby #{script_directory}/primer_matching.rb -p #{file_basename}_reverse_missing_primer_map.txt -o #{file_basename}_reverse_missing_primer_info.txt` 
+  `ruby #{script_directory}/primer_matching.rb -p #{file_basename}_forward_missing_primer_map.txt -o #{file_basename}_forward_missing_primer_info.txt -a #{file_basename}.fq` 
+  `ruby #{script_directory}/primer_matching.rb -p #{file_basename}_reverse_missing_primer_map.txt -o #{file_basename}_reverse_missing_primer_info.txt -a #{file_basename}.fq`
 
   # Open the files with parsed primer matching results
   "#{file_basename}_forward_missing_primer_info.txt".nil? == false  ? primer_matching_fm_parsed_file = File.open("#{file_basename}_forward_missing_primer_info.txt") : abort("Primer mapping parsed file for forward primer missing was not created from primer_matching.rb")
@@ -463,14 +463,34 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, human_db
         all_reads_hash[read_name].r_primer_end = primer_record_hash[read_name][5].to_i
         all_reads_hash[read_name].read_orientation = primer_record_hash[read_name][6]
         all_reads_hash[read_name].primer_note = primer_record_hash[read_name][7]
+      elsif primer_record_hash[read_name][0] == true and primer_record_hash[read_name][1] == false
+        all_reads_hash[read_name].primer_note = "forward_singleton"
+        all_reads_hash[read_name].f_primer_matches = primer_record_hash[read_name][0]
+        all_reads_hash[read_name].r_primer_matches = primer_record_hash[read_name][1]
+        all_reads_hash[read_name].f_primer_start = primer_record_hash[read_name][2].to_i
+        all_reads_hash[read_name].f_primer_end = primer_record_hash[read_name][3].to_i
+        all_reads_hash[read_name].r_primer_start = primer_record_hash[read_name][4].to_i
+        all_reads_hash[read_name].r_primer_end = primer_record_hash[read_name][5].to_i
+        all_reads_hash[read_name].read_orientation = primer_record_hash[read_name][6]
+        singletons_hash[read_name] = [primer_record_hash[read_name][0], primer_record_hash[read_name][1]]
+      elsif primer_record_hash[read_name][0] == false and primer_record_hash[read_name][1] == true
+        all_reads_hash[read_name].primer_note = "reverse_singleton"
+        all_reads_hash[read_name].f_primer_matches = primer_record_hash[read_name][0]
+        all_reads_hash[read_name].r_primer_matches = primer_record_hash[read_name][1]
+        all_reads_hash[read_name].f_primer_start = primer_record_hash[read_name][2].to_i
+        all_reads_hash[read_name].f_primer_end = primer_record_hash[read_name][3].to_i
+        all_reads_hash[read_name].r_primer_start = primer_record_hash[read_name][4].to_i
+        all_reads_hash[read_name].r_primer_end = primer_record_hash[read_name][5].to_i
+        all_reads_hash[read_name].read_orientation = primer_record_hash[read_name][6]
+        singletons_hash[read_name] = [primer_record_hash[read_name][0], primer_record_hash[read_name][1]]
       else
         all_reads_hash[read_name].primer_note = "primer_match_length_criteria_failed"
       end
       
       # Get singletons hash 
-      if primer_record_hash[read_name][0] == false or primer_record_hash[read_name][1] == false
-        singletons_hash[read_name] = [primer_record_hash[read_name][0], primer_record_hash[read_name][1]]
-      end
+      #if primer_record_hash[read_name][0] == false or primer_record_hash[read_name][1] == false
+      #  singletons_hash[read_name] = [primer_record_hash[read_name][0], primer_record_hash[read_name][1]]
+      #end
 
     else
       count_no_primer_match += 1
