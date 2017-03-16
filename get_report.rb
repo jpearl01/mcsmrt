@@ -76,6 +76,21 @@ otu_table_hash.sort.each do |key, value|
   	table_utax_map_file.puts("#{key}\t#{size_hash[key]}\t#{value_to_print}\t#{utax_table_hash[key]}")
 end
 
+##### Getting the number of reads which din't get mapped in the usearch_global command
+unmapped_usearch_global_file = Bio::FlatFile.auto("#{sample}_unmapped_userach_global.fa")
+unmapped_hash = {}
+unmapped_usearch_global_file.each do |entry|
+	sample_name = entry.definition.split(";")[1].split("=")[1]
+	#puts sample_name
+	if unmapped_hash.key?(sample_name)
+		unmapped_hash[sample_name] += 1
+	else
+		unmapped_hash[sample_name] = 1
+	end
+end
+#puts unmapped_hash
+#pp unmapped_hash
+
 ##### Printing the final report                                                                                                                              
 if ambi_otu_size.size == 0
   report_file.puts("Sample = #{sample}")
@@ -85,6 +100,8 @@ if ambi_otu_size.size == 0
   report_file.puts("Number of OTUs considered as ambiguous chimeras = #{filt_2.ambiguous_in_uchime}")
   report_file.puts("Size of the OTUs which were considered as ambiguous chimeras = NA")
   report_file.puts("Number of OTUs overall = #{filt_2.num_of_otus}")
+  report_file.puts("Number of unmapped reads with usearch_global =")
+  report_file.puts(unmapped_hash.map{ |k,v| "	#{k} => #{v}" }.sort)
 else
   report_file.puts("Sample = #{sample}")
   report_file.puts("Number of sequences after dereplication = #{filt_2.derep_count}")
@@ -93,6 +110,8 @@ else
   report_file.puts("Number of OTUs considered as ambiguous chimeras = #{filt_2.ambiguous_in_uchime}")
   report_file.puts("Size of the OTUs which were considered as ambiguous chimeras = #{ambi_otu_size*","}")
   report_file.puts("Number of OTUs overall = #{filt_2.num_of_otus}")
+  report_file.puts("Number of unmapped reads with usearch_global =")
+  report_file.puts(unmapped_hash.map{ |k,v| "	#{k} => #{v}" }.sort)
 end
 
 

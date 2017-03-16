@@ -12,7 +12,7 @@ end
 #puts opts
 
 abort("!!!!The primer matching results file does not exist!!!!") if !File.exists?(opts[:primerfile])
-abort("!!!!The primer matching results file does not exist!!!!") if !File.exists?(opts[:allreadsfile])
+abort("!!!!The file with all reads does not exist!!!!") if !File.exists?(opts[:allreadsfile])
 
 primer_file = File.open(opts[:primerfile], "r")
 all_reads_file = Bio::FlatFile.auto(opts[:allreadsfile], "r") 

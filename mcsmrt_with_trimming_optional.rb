@@ -52,8 +52,7 @@ length_max = opts[:lengthmax].to_i
 length_min = opts[:lengthmin].to_i 
 
 ##### Get the path to the directory in which the scripts exist 
-#script_directory = File.dirname(__FILE__)
-script_directory = "../mcsmrt"
+script_directory = File.dirname(__FILE__)
 
 ##### Class that stores information about each record from the reads file
 class Read_sequence
@@ -414,7 +413,6 @@ def orient (f_primer_matches, r_primer_matches, read_orientation, half_primer_ma
   return seq_oriented, qual_oriented
 end
 
-
 ##### Work with the file which has all the reads
 def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req, human_db, primer_file)
   # Get the basename of the fastq file
@@ -507,14 +505,34 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
         all_reads_hash[read_name].r_primer_end = primer_record_hash[read_name][5].to_i
         all_reads_hash[read_name].read_orientation = primer_record_hash[read_name][6]
         all_reads_hash[read_name].primer_note = primer_record_hash[read_name][7]
+      elsif primer_record_hash[read_name][0] == true and primer_record_hash[read_name][1] == false
+        all_reads_hash[read_name].primer_note = "forward_singleton"
+        all_reads_hash[read_name].f_primer_matches = primer_record_hash[read_name][0]
+        all_reads_hash[read_name].r_primer_matches = primer_record_hash[read_name][1]
+        all_reads_hash[read_name].f_primer_start = primer_record_hash[read_name][2].to_i
+        all_reads_hash[read_name].f_primer_end = primer_record_hash[read_name][3].to_i
+        all_reads_hash[read_name].r_primer_start = primer_record_hash[read_name][4].to_i
+        all_reads_hash[read_name].r_primer_end = primer_record_hash[read_name][5].to_i
+        all_reads_hash[read_name].read_orientation = primer_record_hash[read_name][6]
+        singletons_hash[read_name] = [primer_record_hash[read_name][0], primer_record_hash[read_name][1]]
+      elsif primer_record_hash[read_name][0] == false and primer_record_hash[read_name][1] == true
+        all_reads_hash[read_name].primer_note = "reverse_singleton"
+        all_reads_hash[read_name].f_primer_matches = primer_record_hash[read_name][0]
+        all_reads_hash[read_name].r_primer_matches = primer_record_hash[read_name][1]
+        all_reads_hash[read_name].f_primer_start = primer_record_hash[read_name][2].to_i
+        all_reads_hash[read_name].f_primer_end = primer_record_hash[read_name][3].to_i
+        all_reads_hash[read_name].r_primer_start = primer_record_hash[read_name][4].to_i
+        all_reads_hash[read_name].r_primer_end = primer_record_hash[read_name][5].to_i
+        all_reads_hash[read_name].read_orientation = primer_record_hash[read_name][6]
+        singletons_hash[read_name] = [primer_record_hash[read_name][0], primer_record_hash[read_name][1]]
       else
         all_reads_hash[read_name].primer_note = "primer_match_length_criteria_failed"
       end
       
       # Get singletons hash 
-      if primer_record_hash[read_name][0] == false or primer_record_hash[read_name][1] == false
-        singletons_hash[read_name] = [primer_record_hash[read_name][0], primer_record_hash[read_name][1]]
-      end
+      #if primer_record_hash[read_name][0] == false or primer_record_hash[read_name][1] == false
+      #  singletons_hash[read_name] = [primer_record_hash[read_name][0], primer_record_hash[read_name][1]]
+      #end
 
     else
       count_no_primer_match += 1
@@ -555,11 +573,15 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
   
     #puts all_reads_hash[k].f_primer_matches, all_reads_hash[k].r_primer_matches, all_reads_hash[k].f_primer_start, all_reads_hash[k].f_primer_end, all_reads_hash[k].r_primer_start, all_reads_hash[k].r_primer_end, all_reads_hash[k].read_orientation, all_reads_hash[k].half_primer_match, all_reads_hash[k].half_match_start, all_reads_hash[k].half_match_end, seqs_hash[k][0], seqs_hash[k][1]
 
+    # Trim and orient sequences with the trim_and_orient method
+    seq_trimmed_length, seq_trimmed, qual_trimmed, ee = trim_and_orient(all_reads_hash[k].f_primer_matches, all_reads_hash[k].r_primer_matches, all_reads_hash[k].f_primer_start, all_reads_hash[k].f_primer_end, all_reads_hash[k].r_primer_start, all_reads_hash[k].r_primer_end, all_reads_hash[k].read_orientation, all_reads_hash[k].half_primer_match, all_reads_hash[k].half_match_start, all_reads_hash[k].half_match_end, seqs_hash[k][0], seqs_hash[k][1])
+    #puts "#{seq_trimmed_length},#{seq_trimmed},#{qual_trimmed}" 
+
     if trim_req == "yes"
     	# Trim and orient sequences with the trim_and_orient method
     	seq_trimmed_length, seq_trimmed, qual_trimmed, ee = trim_and_orient(all_reads_hash[k].f_primer_matches, all_reads_hash[k].r_primer_matches, all_reads_hash[k].f_primer_start, all_reads_hash[k].f_primer_end, all_reads_hash[k].r_primer_start, all_reads_hash[k].r_primer_end, all_reads_hash[k].read_orientation, all_reads_hash[k].half_primer_match, all_reads_hash[k].half_match_start, all_reads_hash[k].half_match_end, seqs_hash[k][0], seqs_hash[k][1])
     	#puts "#{seq_trimmed_length},#{seq_trimmed},#{qual_trimmed}" 
-
+    	
     	if seq_trimmed == ""
       		# Add the length_postrim info to the all_reads_hash
       		all_reads_hash[k].length_posttrim = -1
@@ -595,7 +617,7 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
       		trimmed_hash[seqs_hash[k][2]] = [seq_oriented, qual_oriented]
     	end
     end
-
+    
     # Write all reads to output file
     all_info_out_file.puts("#{k}\t#{all_reads_hash[k].basename}\t#{all_reads_hash[k].ccs}\t#{all_reads_hash[k].barcode}\t#{all_reads_hash[k].sample}\t#{all_reads_hash[k].ee_pretrim}\t#{all_reads_hash[k].ee_posttrim}\t#{all_reads_hash[k].length_pretrim}\t#{all_reads_hash[k].length_posttrim}\t#{all_reads_hash[k].host_map}\t#{all_reads_hash[k].f_primer_matches}\t#{all_reads_hash[k].r_primer_matches}\t#{all_reads_hash[k].f_primer_start}\t#{all_reads_hash[k].f_primer_end}\t#{all_reads_hash[k].r_primer_start}\t#{all_reads_hash[k].r_primer_end}\t#{all_reads_hash[k].read_orientation}\t#{all_reads_hash[k].primer_note}\t#{all_reads_hash[k].half_primer_match}")
   end
