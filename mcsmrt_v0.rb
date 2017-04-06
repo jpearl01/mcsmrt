@@ -433,6 +433,7 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
   count_no_primer_match = 0
   primer_record_hash = primer_match(script_directory, file_basename, primer_file)
   #puts primer_record_hash.inspect
+  #puts primer_record_hash["m150212_113119_42168_c100747522550000001823168507081543_s1_p0/32770/ccs"]
 
   # Prereqs for the next loop
   # Create the hash which is going to store all infor for each read using the Read_sequence class
@@ -505,18 +506,8 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
         all_reads_hash[read_name].r_primer_end = primer_record_hash[read_name][5].to_i
         all_reads_hash[read_name].read_orientation = primer_record_hash[read_name][6]
         all_reads_hash[read_name].primer_note = primer_record_hash[read_name][7]
-      elsif primer_record_hash[read_name][0] == true and primer_record_hash[read_name][1] == false
-        all_reads_hash[read_name].primer_note = "forward_singleton"
-        all_reads_hash[read_name].f_primer_matches = primer_record_hash[read_name][0]
-        all_reads_hash[read_name].r_primer_matches = primer_record_hash[read_name][1]
-        all_reads_hash[read_name].f_primer_start = primer_record_hash[read_name][2].to_i
-        all_reads_hash[read_name].f_primer_end = primer_record_hash[read_name][3].to_i
-        all_reads_hash[read_name].r_primer_start = primer_record_hash[read_name][4].to_i
-        all_reads_hash[read_name].r_primer_end = primer_record_hash[read_name][5].to_i
-        all_reads_hash[read_name].read_orientation = primer_record_hash[read_name][6]
-        singletons_hash[read_name] = [primer_record_hash[read_name][0], primer_record_hash[read_name][1]]
-      elsif primer_record_hash[read_name][0] == false and primer_record_hash[read_name][1] == true
-        all_reads_hash[read_name].primer_note = "reverse_singleton"
+      elsif primer_record_hash[read_name][0] == false or primer_record_hash[read_name][1] == false
+        all_reads_hash[read_name].primer_note = primer_record_hash[read_name][7]
         all_reads_hash[read_name].f_primer_matches = primer_record_hash[read_name][0]
         all_reads_hash[read_name].r_primer_matches = primer_record_hash[read_name][1]
         all_reads_hash[read_name].f_primer_start = primer_record_hash[read_name][2].to_i
