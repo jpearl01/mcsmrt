@@ -1,7 +1,7 @@
-MC-SMRT
-Microbiome Classifier for SMRT PacBio data
+#MC-SMRT
+##Microbiome Classifier for SMRT PacBio data
 
-Introduction:
+###Introduction:
 MCSMRT is a tool for microbiome analysis of PacBio data. This tool is a pipeline to go from raw PacBio data to clustered sequences (OTUs or Operational Taxonomic Units).  The outputs include a table of the number of reads assigned to each OTU and taxonomic lineage associated with each OTU. Another output consists of general information regarding each read, for example, CCS count, expected error, length, primer matching result, etc. 
 
 Installation and Dependencies: 
