@@ -4,23 +4,23 @@
 ### Introduction:
 MCSMRT is a tool for microbiome analysis of PacBio data. This tool is a pipeline to go from raw PacBio data to clustered sequences (OTUs or Operational Taxonomic Units).  The outputs include a table of the number of reads assigned to each OTU and taxonomic lineage associated with each OTU. Another output consists of general information regarding each read, for example, CCS count, expected error, length, primer matching result, etc. 
 
-Installation and Dependencies: 
+### Installation and Dependencies: 
 1) Ruby v2.2.1 or greater
-	To install dependencies run the command 
-	<code>$ bundle </code>
+	..* To install dependencies run the command 
+	..* `$ bundle`
 2) BWA https://sourceforge.net/projects/bio-bwa/files/
 3) Sambamba http://lomereiter.github.io/sambamba/
 4) Usearch v8.1 from http://www.drive5.com/usearch/download.html .  
-	<code> $ln -s usearch8.1.*_i86linux* ~/bin/usearch </code>
+	..* `$ln -s usearch8.1.*_i86linux* ~/bin/usearch`
 
-Requirements:
+### Requirements:
 Fasta file of forward and reverse primer sequences. (For more information on FASTA file formats, refer https://en.wikipedia.org/wiki/FASTA_format).
 Fasta formatted taxonomy classification database (NCBI database included in this repository)
 Usearch formatted taxonomy classification database see: If you want to create your own udb file, refer http://www.drive5.com/usearch/manual/cmd_makeudb_utax.html (NCBI databse included repository)
 rdp_gold database for chimera detection: http://drive5.com/uchime/gold.fa
 Host genome file, for filtering sequences mapping to host genome
 
-Usage: 
+### Usage: 
 First and foremost, you will need a FASTA file with primer sequences used for your project. Go ahead and create the file with all the primer sequences used and store it in your working directory 
 This file is used for matching sequences to primers and trimming (which is optional). This file is referred to as PRIMERS_DB and is one of the inputs for the mcsmrt.rb script.
 There are 2 methods/routes you can choose from, in order to run your PacBio data through the microbiome classifier. 
