@@ -5,12 +5,12 @@
 MCSMRT is a tool for microbiome analysis of PacBio data. This tool is a pipeline to go from raw PacBio data to clustered sequences (OTUs or Operational Taxonomic Units).  The outputs include a table of the number of reads assigned to each OTU and taxonomic lineage associated with each OTU. Another output consists of general information regarding each read, for example, CCS count, expected error, length, primer matching result, etc. 
 
 ### Installation and Dependencies: 
-1) Ruby v2.2.1 or greater
+1. Ruby v2.2.1 or greater
   * To install dependencies run the command 
   * `$ bundle`
-2) BWA https://sourceforge.net/projects/bio-bwa/files/
-3) Sambamba http://lomereiter.github.io/sambamba/
-4) Usearch v8.1 from http://www.drive5.com/usearch/download.html .  
+2. BWA https://sourceforge.net/projects/bio-bwa/files/
+3. Sambamba http://lomereiter.github.io/sambamba/
+4. Usearch v8.1 from http://www.drive5.com/usearch/download.html .  
   * `$ln -s usearch8.1.*_i86linux* ~/bin/usearch`
 
 ### Requirements:
