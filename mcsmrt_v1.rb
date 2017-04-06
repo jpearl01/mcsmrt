@@ -9,6 +9,7 @@ opts = Trollop::options do
   opt :allFiles, "Use all files in the given directory name (with -d option) for clustering", :short => "-a"
   opt :foldername, "Folder with the demultiplexed files for clustering", :type => :string, :short => "-f"
   opt :samplelist, "File with a list of file names which are to be merged and clustered together", :type => :string, :short => "-i"
+  opt :threads, "Number of threads you can allot for running this process", :type => :int, :short => "-d", :default => 1
   opt :eevalue, "Expected error value greater than which reads will be filtered out", :type => :float, :short => "-e", :default => 1.0
   opt :trimming, "Do you want to trim your sequences? Answer in yes or no", :type => :string, :short => "-m", :default => "yes"
   opt :ccsvalue, "CCS passes lesser than which reads will be filtered out", :type => :int, :short => "-s", :default => 5
@@ -45,6 +46,7 @@ opts[:lineagefastafile].nil?  ==false  ? lineage_fasta_file = opts[:lineagefasta
 opts[:host_db].nil?           ==false  ? human_db = opts[:host_db]                    : abort("Must supply a fasta of the host genome e.g. human_g1k.fasta with '-g'")
 opts[:primerfile].nil?        ==false  ? primer_file = opts[:primerfile]              : abort("Must supply a fasta of the primer sequences e.g primer_seqs.fa with '-p'")
 
+thread = opts[:threads].to_i
 ee = opts[:eevalue].to_f 
 trim_req = opts[:trimming].to_s
 ccs = opts[:ccsvalue].to_i 
@@ -161,9 +163,9 @@ def map_to_human_genome (file_basename, human_db)
 end
 
 ##### Method for primer matching 
-def primer_match (script_directory, file_basename, primer_file)
+def primer_match (script_directory, file_basename, primer_file, thread)
 	# Run the usearch command for primer matching
-	`usearch -usearch_local #{file_basename}.fq -db #{primer_file} -id 0.8 -userout #{file_basename}_primer_map.txt -userfields query+target+qstrand+tlo+thi+qlo+qhi+pairs+gaps+mism+diffs -strand both -gapopen 1.0 -gapext 0.5 -lopen 1.0 -lext 0.5`
+	`usearch -usearch_local #{file_basename}.fq -db #{primer_file} -id 0.8 -threads #{thread} -userout #{file_basename}_primer_map.txt -userfields query+target+qstrand+tlo+thi+qlo+qhi+pairs+gaps+mism+diffs -strand both -gapopen 1.0 -gapext 0.5 -lopen 1.0 -lext 0.5`
   	#`usearch -search_oligodb #{file_basename}.fq -db #{primer_file} -strand both -userout #{file_basename}_primer_map.txt -userfields query+target+qstrand+diffs+tlo+thi+qlo+qhi`                                                                                                    
 
   	# Run the script which parses the primer matching output
@@ -260,7 +262,7 @@ def orient (f_primer_matches, r_primer_matches, read_orientation, seq, qual)
 end
 
 ##### Work with the file which has all the reads
-def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req, human_db, primer_file)
+def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req, human_db, primer_file, thread)
   	# Get the basename of the fastq file
   	file_basename = File.basename(all_bc_reads_file, ".*")
 
@@ -272,17 +274,17 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
   	trimmed_out_file = File.open("#{file_basename}_trimmed.fq", "w")
 
   	# Get the seqs which map to the host genome by calling the map_to_host_genome method
- 	mapped_count, mapped_string = map_to_human_genome(file_basename, human_db) 
+ 	  mapped_count, mapped_string = map_to_human_genome(file_basename, human_db) 
   	#puts mapped_string.inspect 
 
   	# Primer matching by calling the primer_match method
   	count_no_primer_match = 0
-  	primer_record_hash = primer_match(script_directory, file_basename, primer_file)
+  	primer_record_hash = primer_match(script_directory, file_basename, primer_file, thread)
   	#puts primer_record_hash.inspect
   	#puts primer_record_hash["m150212_113119_42168_c100747522550000001823168507081543_s1_p0/32770/ccs"]
 
   	# Prereqs for the next loop
- 	# Create the hash which is going to store all infor for each read using the Read_sequence class
+ 	  #Create the hash which is going to store all infor for each read using the Read_sequence class
   	all_reads_hash = {}
   	# Create a sequence hash which has all the sequence and quality strings for each record
   	seqs_hash = {}
@@ -450,7 +452,7 @@ concat_files(folder_name, all_files, sample_list)
 all_bc_reads_file = "all_bc_reads.fq"
 
 # Calling the method which then calls all the other methods! 
-all_reads_hash, trimmed_hash = process_all_bc_reads_file(script_directory, all_bc_reads_file, ee, trim_req, human_db, primer_file)
+all_reads_hash, trimmed_hash = process_all_bc_reads_file(script_directory, all_bc_reads_file, ee, trim_req, human_db, primer_file, thread)
 
 #=begin
 

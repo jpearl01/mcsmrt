@@ -2,7 +2,7 @@
 require 'bio'
 require 'trollop'
 
-#USAGE: ruby ../mcsmrt_mod/mcsmrt.rb -a -f reads/ -e 1 -s 5 -x 2000 -n 500 -c ../rdp_gold.fa -t ../lineanator/16sMicrobial_ncbi_lineage_reference_database.udb -l ../lineanator/16sMicrobial_ncbi_lineage.fasta -g ../human_g1k_v37.fasta -p ../primers.fasta
+#USAGE: ruby ../mcsmrt_mod/mcsmrt.rb -d 32 -a -f reads/ -e 1 -s 5 -x 2000 -n 500 -c ../rdp_gold.fa -t ../lineanator/16sMicrobial_ncbi_lineage_reference_database.udb -l ../lineanator/16sMicrobial_ncbi_lineage.fasta -g ../human_g1k_v37.fasta -p ../primers.fasta
 
 ##### Input 
 opts = Trollop::options do
@@ -10,6 +10,7 @@ opts = Trollop::options do
   opt :foldername, "Folder with the demultiplexed files for clustering", :type => :string, :short => "-f"
   opt :samplelist, "File with a list of file names which are to be merged and clustered together", :type => :string, :short => "-i"
   opt :eevalue, "Expected error value greater than which reads will be filtered out", :type => :float, :short => "-e", :default => 1.0
+  opt :threads, "Number of threads you can allot for running this process", :type => :int, :short => "-d", :default => 1
   opt :trimming, "Do you want to trim your sequences? Answer in yes or no", :type => :string, :short => "-m", :default => "yes"
   opt :ccsvalue, "CCS passes lesser than which reads will be filtered out", :type => :int, :short => "-s", :default => 5
   opt :lengthmax, "Maximum length above which reads will be filtered out", :type => :int, :short => "-x", :default => 2000
@@ -45,6 +46,7 @@ opts[:lineagefastafile].nil?  ==false  ? lineage_fasta_file = opts[:lineagefasta
 opts[:host_db].nil?           ==false  ? human_db = opts[:host_db]                    : abort("Must supply a fasta of the host genome e.g. human_g1k.fasta with '-g'")
 opts[:primerfile].nil?        ==false  ? primer_file = opts[:primerfile]              : abort("Must supply a fasta of the primer sequences e.g primer_seqs.fa with '-p'")
 
+thread = opts[:threads].to_i
 ee = opts[:eevalue].to_f 
 trim_req = opts[:trimming].to_s
 ccs = opts[:ccsvalue].to_i 
@@ -164,9 +166,9 @@ def map_to_human_genome (file_basename, human_db)
 end
 
 ##### Method for primer matching 
-def primer_match (script_directory, file_basename, primer_file)
+def primer_match (script_directory, file_basename, primer_file, thread)
 	# Run the usearch command for primer matching
-  `usearch -search_oligodb #{file_basename}.fq -db #{primer_file} -strand both -userout #{file_basename}_primer_map.txt -userfields query+target+qstrand+diffs+tlo+thi+qlo+qhi`                                                                                                    
+  `usearch -search_oligodb #{file_basename}.fq -db #{primer_file} -strand both -userout #{file_basename}_primer_map.txt -userfields query+target+qstrand+diffs+tlo+thi+qlo+qhi -threads #{thread}`                                                                                                    
 
   # Run the script which parses the primer matching output
   `ruby #{script_directory}/primer_matching.rb -p #{file_basename}_primer_map.txt -o #{file_basename}_primer_info.txt -a #{file_basename}.fq` 
@@ -414,7 +416,7 @@ def orient (f_primer_matches, r_primer_matches, read_orientation, half_primer_ma
 end
 
 ##### Work with the file which has all the reads
-def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req, human_db, primer_file)
+def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req, human_db, primer_file, thread)
   # Get the basename of the fastq file
   file_basename = File.basename(all_bc_reads_file, ".*")
 
@@ -431,7 +433,7 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
 
   # Primer matching by calling the primer_match method
   count_no_primer_match = 0
-  primer_record_hash = primer_match(script_directory, file_basename, primer_file)
+  primer_record_hash = primer_match(script_directory, file_basename, primer_file, thread)
   #puts primer_record_hash.inspect
   #puts primer_record_hash["m150212_113119_42168_c100747522550000001823168507081543_s1_p0/32770/ccs"]
 
@@ -633,7 +635,7 @@ concat_files(folder_name, all_files, sample_list)
 all_bc_reads_file = "all_bc_reads.fq"
 
 # Calling the method which then calls all the other methods! 
-all_reads_hash, trimmed_hash = process_all_bc_reads_file(script_directory, all_bc_reads_file, ee, trim_req, human_db, primer_file)
+all_reads_hash, trimmed_hash = process_all_bc_reads_file(script_directory, all_bc_reads_file, ee, trim_req, human_db, primer_file, thread)
 
 #=begin
 
