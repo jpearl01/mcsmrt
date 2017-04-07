@@ -141,15 +141,15 @@ def get_ee_from_fq_file (file_basename, ee, suffix)
 end
 
 ##### Mapping reads to the human genome
-def map_to_human_genome (file_basename, human_db)
+def map_to_human_genome (file_basename, human_db, thread)
   #align all reads to the human genome                                                                                                                   
-  `bwa mem -t 30 #{human_db} #{file_basename}.fq > #{file_basename}_host_map.sam`
+  `bwa mem -t #{thread} #{human_db} #{file_basename}.fq > #{file_basename}_host_map.sam`
   
   #sambamba converts sam to bam format                                                                                                                   
   `sambamba view -S -f bam #{file_basename}_host_map.sam -o #{file_basename}_host_map.bam`
   
   #Sort the bam file                                                                                                                                     
-  `sambamba sort -t30 -o #{file_basename}_host_map_sorted.bam #{file_basename}_host_map.bam`
+  `sambamba sort -t#{thread} -o #{file_basename}_host_map_sorted.bam #{file_basename}_host_map.bam`
   
   #filter the bam for only ‘not unmapped’ reads -> reads that are mapped                                                                                 
   `sambamba view -F 'not unmapped' #{file_basename}_host_map.bam > #{file_basename}_host_map_mapped.txt`
@@ -240,7 +240,7 @@ def create_half_primer_files (primer_file_path)
 end 
 
 ##### Method to retrieve singletons
-def retrieve_singletons (script_directory, seqs_hash, singletons_hash, file_basename)
+def retrieve_singletons (script_directory, seqs_hash, singletons_hash, file_basename, thread)
   #Create separate fq files for the ones missing the forward or reverse macthes!
   fh1 = File.open("#{file_basename}_singletons_forward_missing.fq", "w")
   fh2 = File.open("#{file_basename}_singletons_reverse_missing.fq", "w")
@@ -266,8 +266,8 @@ def retrieve_singletons (script_directory, seqs_hash, singletons_hash, file_base
   abort("!!!!The fq file singletons reverse missing is empty!!!!") if File.zero?("#{file_basename}_singletons_reverse_missing.fq")
 
   # Run the usearch command for primer matching with half the forward or half the reverse primer seqs
-  `usearch -search_oligodb #{file_basename}_singletons_forward_missing.fq -db primer_half_fow.fasta -strand both -userout #{file_basename}_forward_missing_primer_map.txt -userfields query+target+qstrand+diffs+tlo+thi+qlo+qhi`
-  `usearch -search_oligodb #{file_basename}_singletons_reverse_missing.fq -db primer_half_rev.fasta -strand both -userout #{file_basename}_reverse_missing_primer_map.txt -userfields query+target+qstrand+diffs+tlo+thi+qlo+qhi`
+  `usearch -search_oligodb #{file_basename}_singletons_forward_missing.fq -db primer_half_fow.fasta -strand both -userout #{file_basename}_forward_missing_primer_map.txt -userfields query+target+qstrand+diffs+tlo+thi+qlo+qhi -threads #{thread}`
+  `usearch -search_oligodb #{file_basename}_singletons_reverse_missing.fq -db primer_half_rev.fasta -strand both -userout #{file_basename}_reverse_missing_primer_map.txt -userfields query+target+qstrand+diffs+tlo+thi+qlo+qhi -threads #{thread}`
 
   # Run the primer matching script on these 2 primer matching results
   `ruby #{script_directory}/primer_matching.rb -p #{file_basename}_forward_missing_primer_map.txt -o #{file_basename}_forward_missing_primer_info.txt -a #{file_basename}.fq` 
@@ -428,7 +428,7 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
   trimmed_out_file = File.open("#{file_basename}_trimmed.fq", "w")
 
   # Get the seqs which map to the host genome by calling the map_to_host_genome method
-  mapped_count, mapped_string = map_to_human_genome(file_basename, human_db) 
+  mapped_count, mapped_string = map_to_human_genome(file_basename, human_db, thread) 
   #puts mapped_string.inspect 
 
   # Primer matching by calling the primer_match method
@@ -548,7 +548,7 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
   create_half_primer_files(primer_file)
   
   # Call the method which retrieves singletons
-  return_hash_fm, return_hash_rm = retrieve_singletons(script_directory, seqs_hash, singletons_hash, file_basename)
+  return_hash_fm, return_hash_rm = retrieve_singletons(script_directory, seqs_hash, singletons_hash, file_basename, thread)
   #puts return_hash_fm.length + return_hash_rm.length
   #puts return_hash_fm["m151002_181152_42168_c100863312550000001823190302121650_s1_p0/33682/ccs"].inspect
 

@@ -138,15 +138,15 @@ def get_ee_from_fq_file (file_basename, ee, suffix)
 end
 
 ##### Mapping reads to the human genome
-def map_to_human_genome (file_basename, human_db)
+def map_to_human_genome (file_basename, human_db, thread)
   #align all reads to the human genome                                                                                                                   
-  `bwa mem -t 30 #{human_db} #{file_basename}.fq > #{file_basename}_host_map.sam`
+  `bwa mem -t #{thread} #{human_db} #{file_basename}.fq > #{file_basename}_host_map.sam`
   
   #sambamba converts sam to bam format                                                                                                                   
   `sambamba view -S -f bam #{file_basename}_host_map.sam -o #{file_basename}_host_map.bam`
   
   #Sort the bam file                                                                                                                                     
-  `sambamba sort -t30 -o #{file_basename}_host_map_sorted.bam #{file_basename}_host_map.bam`
+  `sambamba sort -t#{thread} -o #{file_basename}_host_map_sorted.bam #{file_basename}_host_map.bam`
   
   #filter the bam for only ‘not unmapped’ reads -> reads that are mapped                                                                                 
   `sambamba view -F 'not unmapped' #{file_basename}_host_map.bam > #{file_basename}_host_map_mapped.txt`
@@ -274,7 +274,7 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
   	trimmed_out_file = File.open("#{file_basename}_trimmed.fq", "w")
 
   	# Get the seqs which map to the host genome by calling the map_to_host_genome method
- 	  mapped_count, mapped_string = map_to_human_genome(file_basename, human_db) 
+ 	  mapped_count, mapped_string = map_to_human_genome(file_basename, human_db, thread) 
   	#puts mapped_string.inspect 
 
   	# Primer matching by calling the primer_match method
@@ -490,7 +490,7 @@ file_for_usearch_global.close
 `ruby #{script_directory}/get_report.rb #{final_fastq_basename}`
   
 # Running blast on the OTUs                                                                                                                            
-`usearch -ublast #{final_fastq_basename}_OTU_s2.fa -db #{lineage_fasta_file} -top_hit_only -id 0.9 -blast6out #{final_fastq_basename}_blast.txt -strand both -evalue 0.01 -threads 15 -accel 0.3`
+`usearch -ublast #{final_fastq_basename}_OTU_s2.fa -db #{lineage_fasta_file} -top_hit_only -id 0.9 -blast6out #{final_fastq_basename}_blast.txt -strand both -evalue 0.01 -threads #{thread} -accel 0.3`
 
 # Running the script whcih gives a final file with all the clustering info, taxa info and blast info
 `ruby #{script_directory}/final_parsing.rb -b #{final_fastq_basename}_blast.txt -u #{final_fastq_basename}_OTU_table_utax_map.txt -o #{final_fastq_basename}_final.txt`
