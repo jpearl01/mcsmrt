@@ -1,4 +1,5 @@
 GEM
+  remote: https://rubygems.org/
   specs:
     bio (1.5.0)
     trollop (2.1.2)
@@ -9,6 +10,3 @@ PLATFORMS
 DEPENDENCIES
   bio
   trollop
-
-BUNDLED WITH
-   1.10.6
