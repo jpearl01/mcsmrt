@@ -47,10 +47,11 @@ otu_utax_file.each_with_index do |line, index|
 	if index == 0
 		next
 	else
-		line_split = line.split("\t")
-		key = line_split[0]
-		capture_array = /d:([^(]+)\(([^)]+)\),p:([^(]+)\(([^)]+)\),c:([^(]+)\(([^)]+)\),o:([^(]+)\(([^)]+)\),f:([^(]+)\(([^)]+)\),g:([^(]+)\(([^)]+)\),s:([^(]+)\(([^)]+)\)/.match(line)
-		#puts capture_array[1]+"\t"+capture_array[2]+"\t"+capture_array[3]+"\t"+capture_array[4]+"\t"+capture_array[5]+"\t"+capture_array[6]+"\t"+capture_array[7]+"\t"+capture_array[8]+"\t"+capture_array[9]+"\t"+capture_array[10]+"\t"+capture_array[11]+"\t"+capture_array[12]+"\t"+capture_array[13]
-		out_file.puts(line_split[0..-2].join("\t")+"\t"+capture_array[1..-1].join("\t")+"\t"+blast_file_hash[key][0..-1].join("\t"))
+          line_split = line.split("\t")
+          key = line_split[0]
+          capture_array = /d:([^(]+)\(([^)]+)\),p:([^(]+)\(([^)]+)\),c:([^(]+)\(([^)]+)\),o:([^(]+)\(([^)]+)\),f:([^(]+)\(([^)]+)\),g:([^(]+)\(([^)]+)\),s:([^(]+)\(([^)]+)\)/.match(line)
+          #puts capture_array[1]+"\t"+capture_array[2]+"\t"+capture_array[3]+"\t"+capture_array[4]+"\t"+capture_array[5]+"\t"+capture_array[6]+"\t"+capture_array[7]+"\t"+capture_array[8]+"\t"+capture_array[9]+"\t"+capture_array[10]+"\t"+capture_array[11]+"\t"+capture_array[12]+"\t"+capture_array[13]
+          next unless blast_file_hash.has_key?(key)
+          out_file.puts(line_split[0..-2].join("\t")+"\t"+capture_array[1..-1].join("\t")+"\t"+blast_file_hash[key][0..-1].join("\t"))
 	end	
 end

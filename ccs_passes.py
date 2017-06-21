@@ -1,3 +1,4 @@
+#!/bin/env python
 import os, h5py
 
 def get_ccs_passes(filename):

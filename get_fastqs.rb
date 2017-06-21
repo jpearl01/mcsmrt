@@ -1,7 +1,7 @@
 require 'bio'
 require 'trollop'
 
-#USAGE: ruby ../mcsmrt_mod/get_fastqs.rb -s #{sample_key_file} -o #{all_bc_reads_output_folder} 
+#USAGE: ruby ../mcsmrt/get_fastqs.rb -s #{sample_key_file} -o #{all_bc_reads_output_folder} 
 
 ##### Input 
 opts = Trollop::options do
@@ -103,7 +103,7 @@ def get_ccs_counts (samps, script_directory)
     	ccs_hash[line_split[0]] = line_split[1]
   	end
 
-  	File.delete(passes_file)
+  	#File.delete(passes_file)
   	return ccs_hash
 end
 

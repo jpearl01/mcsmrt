@@ -44,18 +44,24 @@ end
 
 def parse_primer_file (primer_file)
 	# Storing the record header as the key and primer strand and sequence strand as the value. 
-	record_hash = {}
-    primer_file.each do |line|
-    	line_array = line.split("\t")
-      	key = line_array[0].split(";")[0]
-      	if record_hash.has_key?(key)
-        	record_hash[key].push([line_array[1], line_array[2], line_array[5].chomp.to_i, line_array[6].chomp.to_i, line_array[8].chomp.to_i])
-	    else
-	        record_hash[key] = [[line_array[1], line_array[2], line_array[5].chomp.to_i, line_array[6].chomp.to_i, line_array[8].chomp.to_i]]
-	    end
-	end
-	#puts record_hash 
-	return record_hash                                                                                                                                     
+  record_hash = {}
+  primer_file.each do |line|
+    #next unless $.<5
+    line_array = line.split("\t")
+    key = line_array[0].split(";")[0]
+    #puts key
+    if record_hash.has_key?(key)
+      #puts "in if"
+      record_hash[key].push([line_array[1], line_array[2], line_array[5].chomp.to_i, line_array[6].chomp.to_i, line_array[8].chomp.to_i])
+      #puts record_hash[key]
+
+    else
+      #puts "in else"
+      record_hash[key] = [[line_array[1], line_array[2], line_array[5].chomp.to_i, line_array[6].chomp.to_i, line_array[8].chomp.to_i]]
+      #puts record_hash[key]
+    end
+  end
+  return record_hash      
 end 
 
 def print_info (record_hash, primer_hash, out_file, seqs_hash)
@@ -242,5 +248,5 @@ end
 
 primer_hash = {}
 record_hash = parse_primer_file(primer_file)
-#puts record_hash.length
+#puts record_hash
 print_info(record_hash, primer_hash, out_file, seqs_hash)

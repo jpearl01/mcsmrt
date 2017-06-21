@@ -2,7 +2,7 @@
 require 'bio'
 require 'trollop'
 
-#USAGE: ruby ../mcsmrt_mod/mcsmrt.rb -d 32 -a -f reads/ -e 1 -s 5 -x 2000 -n 500 -c ../rdp_gold.fa -t ../lineanator/16sMicrobial_ncbi_lineage_reference_database.udb -l ../lineanator/16sMicrobial_ncbi_lineage.fasta -g ../human_g1k_v37.fasta -p ../primers.fasta
+#USAGE: ruby ../mcsmrt/mcsmrt.rb -d 32 -a -f reads/ -e 1 -s 5 -x 2000 -n 500 -c ../rdp_gold.fa -t ../lineanator/16sMicrobial_ncbi_lineage_reference_database.udb -l ../lineanator/16sMicrobial_ncbi_lineage.fasta -g ../human_g1k_v37.fasta -p ../primers.fasta
 
 ##### Input 
 opts = Trollop::options do
@@ -103,7 +103,7 @@ def concat_files (folder_name, all_files, sample_list)
     `cat #{folder_name}/#{all_files} > all_bc_reads.fq` 
   end
 
-  abort("!!!!The file with all the reads required for clustering does not exist!!!!") if !File.exists?("all_bc_reads.fq")
+  abort("!!!!The file with all the reads was not created!!!! Did you give valid arguments for -a and -i?") if !File.exists?("all_bc_reads.fq")
 end
 
 ##### Method to write reads in fastq format
@@ -125,6 +125,9 @@ end
 def get_ee_from_fq_file (file_basename, ee, suffix)
 	`usearch -fastq_filter #{file_basename}.fq -fastqout #{file_basename}_#{suffix} -fastq_maxee 20000 -fastq_qmax 75 -fastq_eeout -sample all`
 	
+  # Make sure the output files are created correctly
+  ############################################# HERE #################################
+
 	# Hash that is returned from this method (read name - key, ee - value)
 	ee_hash = {}
 	
@@ -145,6 +148,9 @@ def map_to_human_genome (file_basename, human_db, thread)
   #align all reads to the human genome                                                                                                                   
   `bwa mem -t #{thread} #{human_db} #{file_basename}.fq > #{file_basename}_host_map.sam`
   
+  # Check to make sure bwa worked, which means that the index files also exist
+  abort("!!!!Index files are missing, run the bwa index command to index the reference genome and store them in the same directory as the reference genome!!!!") if File.zero?("#{file_basename}_host_map.sam")
+
   #sambamba converts sam to bam format                                                                                                                   
   `sambamba view -S -f bam #{file_basename}_host_map.sam -o #{file_basename}_host_map.bam`
   
@@ -169,6 +175,9 @@ end
 def primer_match (script_directory, file_basename, primer_file, thread)
 	# Run the usearch command for primer matching
   `usearch -search_oligodb #{file_basename}.fq -db #{primer_file} -strand both -userout #{file_basename}_primer_map.txt -userfields query+target+qstrand+diffs+tlo+thi+qlo+qhi -threads #{thread}`                                                                                                    
+
+  # Check to see if sequences passed primer matching, i.e., if no read has a hit for primers, the output file from the previous step will be empty!
+  abort("!!!!None of the reads mapped to the primers, check your FASTA file which has the primers!!!!") if File.zero?("#{file_basename}_primer_map.txt")
 
   # Run the script which parses the primer matching output
   `ruby #{script_directory}/primer_matching.rb -p #{file_basename}_primer_map.txt -o #{file_basename}_primer_info.txt -a #{file_basename}.fq` 
@@ -424,7 +433,7 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
   all_info_out_file = File.open("#{file_basename}_info.txt", "w")
   all_info_out_file.puts("read_name\tbasename\tccs\tbarcode\tsample\tee_pretrim\tee_posttrim\tlength_pretrim\tlength_posttrim\thost_map\tf_primer_matches\tr_primer_matches\tf_primer_start\tf_primer_end\tr_primer_start\tr_primer_end\tread_orientation\tprimer_note\thalf_primer_match")
 
-  # Opening the file which which will have the trimmed and oriented sequences
+  # Opening the file which will have the trimmed and oriented sequences
   trimmed_out_file = File.open("#{file_basename}_trimmed.fq", "w")
 
   # Get the seqs which map to the host genome by calling the map_to_host_genome method
@@ -435,7 +444,6 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
   count_no_primer_match = 0
   primer_record_hash = primer_match(script_directory, file_basename, primer_file, thread)
   #puts primer_record_hash.inspect
-  #puts primer_record_hash["m150212_113119_42168_c100747522550000001823168507081543_s1_p0/32770/ccs"]
 
   # Prereqs for the next loop
   # Create the hash which is going to store all infor for each read using the Read_sequence class
