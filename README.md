@@ -32,17 +32,16 @@ There are 2 methods/routes you can choose from, in order to run your PacBio data
 
 Method 1: For cases when you have already demultiplexed your samples
   * Step 1: Run get_fastqs.rb in order to obtain CCS counts and barcode information as a part of the FASTQ headers. This step also copies the demultiplexed FASTQ files into a folder. Folder name in which the files are stored should be given by you as an argument.
-    Command:
-    ruby get_fastqs.rb [-h] [-s SAMPLE_INFO_FILE] [-o OUTPUT_FOLDER_NAME] 
+    Command:  
+    ruby get_fastqs.rb [-h] [-s SAMPLE_INFO_FILE] [-o OUTPUT_FOLDER_NAME]  
 
   * Step 2: Run mcsmrt.rb in order to obtain detailed information about each read and find the clusters (OTUs) created. This step in-turn can be used in 2 ways. 
-    Specify that all the files in a given directory can be used for clustering (usually when all the files belong to the same project).
-    Provide a file with a list of file names which can be clustered together.
-    Command:
-    ruby mcsmrt.rb [-h]
-[-a] / [-i LIST_OF_FILES_FOR_CLUSTEIRNG] [-f FOLDER_NAME] [-m TRIMMING]
-[-e EXPECTED_ERROR] [-s CCS_COUNT] [-x MAXIMUM_LENGTH] [-n MINIMUM_LENGTH]
-[-c UCHIME_DB] [-t UTAX_DB] [-l BLAST_DB] [-g HOST_GENOME_DB] [-p PRIMERS_DB]                                                                                    
+    Specify that all the files in a given directory can be used for clustering (usually when all the files belong to the same project), or, provide a file with a list of file names which can be clustered together.
+    Command:  
+    ruby mcsmrt.rb [-h]  
+[-a] / [-i LIST_OF_FILES_FOR_CLUSTEIRNG] [-f FOLDER_NAME] [-m TRIMMING]  
+[-e EXPECTED_ERROR] [-s CCS_COUNT] [-x MAXIMUM_LENGTH] [-n MINIMUM_LENGTH]  
+[-c UCHIME_DB] [-t UTAX_DB] [-l BLAST_DB] [-g HOST_GENOME_DB] [-p PRIMERS_DB]                                                                                        
 
 Method 2: For cases when you have to demultiplex your samples and then run it through the microbiome classifier:
 •	Step 1: Demultiplex using Rachel’s demultiplexing pipeline (https://github.com/rehrlich/ccs_smrt_pipe). This pipeline also results in FASTQ files which have a format that is compatible with mcsmrt.rb script for microbiome analysis. 
