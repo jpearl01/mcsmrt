@@ -30,7 +30,7 @@ This file is used for matching sequences to primers and trimming (which is optio
 
 There are 2 methods/routes you can choose from, in order to run your PacBio data through the microbiome classifier. 
 
-Method 1: For cases when you have already demultiplexed your samples
+# Method 1: For cases when you have already demultiplexed your samples
   * Step 1: Run get_fastqs.rb in order to obtain CCS counts and barcode information as a part of the FASTQ headers. This step also copies the demultiplexed FASTQ files into a folder. Folder name in which the files are stored should be given by you as an argument.  
     Command:    
     ruby get_fastqs.rb [-h] [-s SAMPLE_INFO_FILE] [-o OUTPUT_FOLDER_NAME]  
@@ -43,13 +43,13 @@ Method 1: For cases when you have already demultiplexed your samples
 [-e EXPECTED_ERROR] [-s CCS_COUNT] [-x MAXIMUM_LENGTH] [-n MINIMUM_LENGTH]  
 [-c UCHIME_DB] [-t UTAX_DB] [-l BLAST_DB] [-g HOST_GENOME_DB] [-p PRIMERS_DB]                                                                                        
 
-Method 2: For cases when you have to demultiplex your samples and then run it through the microbiome classifier:
+# Method 2: For cases when you have to demultiplex your samples and then run it through the microbiome classifier
   * Step 1: Demultiplex using Rachel’s demultiplexing pipeline (https://github.com/rehrlich/ccs_smrt_pipe). This pipeline also results in FASTQ files which have a format that is compatible with mcsmrt.rb script for microbiome analysis. 
   * Step 2: Run mcsmrt.rb as described above. 
 
-Arguments explained:
+### Arguments explained:
 
-Arguments for get_fastqs.rb:
+# Arguments for get_fastqs.rb:
   * SAMPLE_INFO_FILE (-s) – This is the file which will have a list of all the PacBio jobs which are demutiplexed. The FASTQ files of the jobs given in this list will be extracted and the headers of each FASTQ sequence will be added with additional tags like CCS count and sample information. The header of this file (first row) should have column names corresponding to PB_jobid, data_path, forward_barcode, reverse_barcode and sample_name. These column names HAVE TO BE exactly as is described here because the program initializes data in each column based on these column names. Data in each column is described as follows:  
       PB_jobid – The ID number assigned to each job when the data is demultiplexed on SMRT portal.    
       data_path – Path to where the demultiplexed data for each job is located.   
@@ -58,7 +58,7 @@ Arguments for get_fastqs.rb:
       sample_name – This is the name given to each sample. This is the one that is going to be added in the FASTQ sequence header with a tag of “barcodelabel”. So, if you want any information to be kept track of, add it as a sample name. Multiple things can be kept track of in the sample name, separated by a “_”. For example, if I want to keep track of patient ID and sample ID in this location, give it the sample name “Pat123_Samp167” where Pat123 corresponds to the patient ID and Samp167 corresponds to the sample ID. This way all this information will be associated with each sequence and can later be tracked easily. Mandatorily, each forward and reverse barcode pair is given a unique number and this number is also added in the beginning of the “barcodelabel” tag in the fastq file.    
   * OUTPUT_FOLDER_NAME (-o) – Name of the folder in which the FASTQ files (with ccs and sample information in the header) are going to be stored. The name of each FASTQ file in this folder is going to be the same as the sample name given in the SAMPLE_INFO_FILE.   
 
-Arguments for mcsmrt.rb:
+# Arguments for mcsmrt.rb:
   * ALL (-a) / LIST_OF_FILES_FOR_CLUSTEIRNG (-i) – If you want to specify particular files for clustering, you should create another file with a list of all the FASTQs you want to concatenate for clustering. This file must have one file name in each row.  If you want all the files in the directory to be clustered together, use the –a option. 
   * FOLDER_NAME (-f) – Name of the folder (preferably the full path), in which the files for microbiome analysis and/or clustering exist. So, the files you provided for this script with the -a/-i option should all be stored in the directory given with this argument. 
   * EXPECTED_ERROR (-e), Default (1.0) – Maximum expected error above which sequences are filtered out (refer  http://www.drive5.com/usearch/manual/expected_errors.html for more information on expected error).
@@ -73,5 +73,5 @@ We used our custom made database file which uses a tool called Lineanator for th
   * PRIMERS_DB (-p) – This is the FASTA format primer file that you created for primer matching and trimming.
   * TRIMMING (-m), Default (yes) – Give “yes” if you want the sequences to be trimmed/primer sequences to be removed, and no if you don’t. 
 
-Built with:  
+### Built with:  
 ruby 2.2.1p85 (2015-02-26 revision 49769) [x86_64-linux]
