@@ -6,12 +6,12 @@ MCSMRT is a tool for microbiome analysis of PacBio data. This tool is a pipeline
 
 ### Installation and Dependencies: 
 1. Ruby v2.2.1 or greater
-  * To install dependencies run the command 
-  * `$ bundle`
+..* To install dependencies run the command 
+..* `$ bundle`
 2. BWA https://sourceforge.net/projects/bio-bwa/files/
 3. Sambamba http://lomereiter.github.io/sambamba/
 4. Usearch v8.1 from http://www.drive5.com/usearch/download.html .  
-  * `$ln -s usearch8.1.*_i86linux* ~/bin/usearch`
+..* `$ln -s usearch8.1.*_i86linux* ~/bin/usearch`
 
 ### Requirements:
 Fasta file of forward and reverse primer sequences. (For more information on FASTA file formats, refer https://en.wikipedia.org/wiki/FASTA_format).
