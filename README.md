@@ -6,36 +6,40 @@ MCSMRT is a tool for microbiome analysis of PacBio data. This tool is a pipeline
 
 ### Installation and Dependencies: 
 1. Ruby v2.2.1 or greater
-..* To install dependencies run the command 
-..* `$ bundle`
+   To install dependencies run the command 
+   `$ bundle`
 2. BWA https://sourceforge.net/projects/bio-bwa/files/
 3. Sambamba http://lomereiter.github.io/sambamba/
 4. Usearch v8.1 from http://www.drive5.com/usearch/download.html .  
-..* `$ln -s usearch8.1.*_i86linux* ~/bin/usearch`
+   `$ln -s usearch8.1.*_i86linux* ~/bin/usearch`
 
 ### Requirements:
 Fasta file of forward and reverse primer sequences. (For more information on FASTA file formats, refer https://en.wikipedia.org/wiki/FASTA_format).
+
 Fasta formatted taxonomy classification database (NCBI database included in this repository)
+
 Usearch formatted taxonomy classification database see: If you want to create your own udb file, refer http://www.drive5.com/usearch/manual/cmd_makeudb_utax.html (NCBI databse included repository)
+
 rdp_gold database for chimera detection: http://drive5.com/uchime/gold.fa
+
 Host genome file, for filtering sequences mapping to host genome
 
 ### Usage: 
-First and foremost, you will need a FASTA file with primer sequences used for your project. Go ahead and create the file with all the primer sequences used and store it in your working directory 
+First and foremost, you will need a FASTA file with primer sequences used for your project. Go ahead and create the file with all the primer sequences used and store it in your working directory.
 This file is used for matching sequences to primers and trimming (which is optional). This file is referred to as PRIMERS_DB and is one of the inputs for the mcsmrt.rb script.
+
 There are 2 methods/routes you can choose from, in order to run your PacBio data through the microbiome classifier. 
 
 Method 1: For cases when you have already demultiplexed your samples
   * Step 1: Run get_fastqs.rb in order to obtain CCS counts and barcode information as a part of the FASTQ headers. This step also copies the demultiplexed FASTQ files into a folder. Folder name in which the files are stored should be given by you as an argument.
-Command:
-  * ruby get_fastqs.rb [-h]
-[-s SAMPLE_INFO_FILE] [-o OUTPUT_FOLDER_NAME] 
+    Command:
+    ruby get_fastqs.rb [-h] [-s SAMPLE_INFO_FILE] [-o OUTPUT_FOLDER_NAME] 
 
   * Step 2: Run mcsmrt.rb in order to obtain detailed information about each read and find the clusters (OTUs) created. This step in-turn can be used in 2 ways. 
-a)	Specify that all the files in a given directory can be used for clustering (usually when all the files belong to the same project).
-b)	Provide a file with a list of file names which can be clustered together.
-Command:
-  * ruby mcsmrt.rb [-h]
+    Specify that all the files in a given directory can be used for clustering (usually when all the files belong to the same project).
+    Provide a file with a list of file names which can be clustered together.
+    Command:
+    ruby mcsmrt.rb [-h]
 [-a] / [-i LIST_OF_FILES_FOR_CLUSTEIRNG] [-f FOLDER_NAME] [-m TRIMMING]
 [-e EXPECTED_ERROR] [-s CCS_COUNT] [-x MAXIMUM_LENGTH] [-n MINIMUM_LENGTH]
 [-c UCHIME_DB] [-t UTAX_DB] [-l BLAST_DB] [-g HOST_GENOME_DB] [-p PRIMERS_DB]                                                                                    
