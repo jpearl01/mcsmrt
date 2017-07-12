@@ -3,11 +3,13 @@ require 'trollop'
 opts = Trollop::options do
   opt :blastfile, "File with blast information.", :type => :string, :short => "-b"
   opt :otuutaxfile, "File with OTU table and utax information.", :type => :string, :short => "-u"
+  opt :ncbiclusteredfile, "File with info about DB clustered", :type => :string, :short => "-n"
   opt :outfile, "Output file with OTU names, OTU counts, lineage and blast results.", :type => :string, :short => "-o"
 end
 
 blast_file = File.open(opts[:blastfile], "r")
 otu_utax_file = File.open(opts[:otuutaxfile], "r")
+ncbi_clustered_file = File.open(opts[:ncbiclusteredfile], "r")
 out_file = File.open(opts[:outfile], "w")
 
 blast_file_hash = {}
@@ -39,19 +41,41 @@ blast_file.each do |line|
 end
 #puts blast_file_hash
 
+ncbi_clustered_hash = {}
+ncbi_clustered_file.each_with_index do |line, index|
+	if index == 0
+		#puts line
+		next
+	else
+		line_split = line.split("\t")
+		species = line_split[12]
+		num_of_species = line_split[-3]
+		avg_otu_id = line_split[1]
+		num_of_avg_otu_with_same_species = line_split[-1]
+		#puts species
+		if ncbi_clustered_hash.has_key?(species)
+			ncbi_clustered_hash[species][2] += 1
+		else
+			ncbi_clustered_hash[species] = [avg_otu_id, num_of_species, 1, num_of_avg_otu_with_same_species]
+		end
+	end 
+end
+#puts ncbi_clustered_hash["Microbacter_margulisiae"]
+
 header = File.open(otu_utax_file, &:readline)
 header_split = header.split("\t")[0..-2].join("\t")
-out_file.puts(header_split+"\tdomain\tdomain_conf\tphylum\tphylum_conf\tclass\tclass_conf\torder\torder_conf\tfamily\tfamily_conf\tgenus\tgenus_conf\tspecies\tspecies_conf\tblast_query\tblast_strain\tblast_16s_completeness\tblast_percent_identity\tblast_alignment_length")
+out_file.puts(header_split+"\tdomain\tdomain_conf\tphylum\tphylum_conf\tclass\tclass_conf\torder\torder_conf\tfamily\tfamily_conf\tgenus\tgenus_conf\tspecies\tspecies_conf\tblast_query\tblast_strain\tblast_16s_completeness\tblast_percent_identity\tblast_alignment_length\tncbi_avglinkage_otu_id\tnum_of_sp_in_cluster\tnum_of_sp_in_db\tnum_of_otus_with_same_sp")
 
 otu_utax_file.each_with_index do |line, index|
 	if index == 0
+		#puts line
 		next
 	else
-          line_split = line.split("\t")
-          key = line_split[0]
-          capture_array = /d:([^(]+)\(([^)]+)\),p:([^(]+)\(([^)]+)\),c:([^(]+)\(([^)]+)\),o:([^(]+)\(([^)]+)\),f:([^(]+)\(([^)]+)\),g:([^(]+)\(([^)]+)\),s:([^(]+)\(([^)]+)\)/.match(line)
-          #puts capture_array[1]+"\t"+capture_array[2]+"\t"+capture_array[3]+"\t"+capture_array[4]+"\t"+capture_array[5]+"\t"+capture_array[6]+"\t"+capture_array[7]+"\t"+capture_array[8]+"\t"+capture_array[9]+"\t"+capture_array[10]+"\t"+capture_array[11]+"\t"+capture_array[12]+"\t"+capture_array[13]
-          next unless blast_file_hash.has_key?(key)
-          out_file.puts(line_split[0..-2].join("\t")+"\t"+capture_array[1..-1].join("\t")+"\t"+blast_file_hash[key][0..-1].join("\t"))
+        line_split = line.split("\t")
+        key = line_split[0]
+        capture_array = /d:([^(]+)\(([^)]+)\),p:([^(]+)\(([^)]+)\),c:([^(]+)\(([^)]+)\),o:([^(]+)\(([^)]+)\),f:([^(]+)\(([^)]+)\),g:([^(]+)\(([^)]+)\),s:([^(]+)\(([^)]+)\)/.match(line)
+        #puts capture_array[1]+"\t"+capture_array[2]+"\t"+capture_array[3]+"\t"+capture_array[4]+"\t"+capture_array[5]+"\t"+capture_array[6]+"\t"+capture_array[7]+"\t"+capture_array[8]+"\t"+capture_array[9]+"\t"+capture_array[10]+"\t"+capture_array[11]+"\t"+capture_array[12]+"\t"+capture_array[13]
+        next unless blast_file_hash.has_key?(key)
+        out_file.puts(line_split[0..-2].join("\t")+"\t"+capture_array[1..-1].join("\t")+"\t"+blast_file_hash[key][0..-1].join("\t")+"\t"+ncbi_clustered_hash[capture_array[13]].join("\t"))
 	end	
 end

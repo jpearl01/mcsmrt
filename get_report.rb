@@ -7,8 +7,8 @@ class Filtered_steps_2
 end
 
 # File mapping between the OTU table and the utax table                                                                                                     
-table_utax_map_file = File.open("#{sample}_OTU_table_utax_map.txt", 'w')
-report_file = File.open("#{sample}_report.txt", 'w')
+table_utax_map_file = File.open("post_OTU_table_utax_map.txt", 'w')
+report_file = File.open("post_general_report.txt", 'w')
 
 #####Initialize log variable                                                                                                                                
 filt_2 = Filtered_steps_2.new
@@ -17,27 +17,28 @@ filt_2.chimera_in_clustering=0
 filt_2.chimera_in_uchime=0
 filt_2.ambiguous_in_uchime=0
 
+# Change file names based on new version
 ##### Dealing with the dereplicated file 
-derep_open =  Bio::FlatFile.auto("#{sample}_dereplicated_s1.fa")                                                                                                     
+derep_open =  Bio::FlatFile.auto("post_dereplicated.fa")                                                                                                     
 count_derep = derep_open.to_a.count
 filt_2.derep_count = count_derep
 
 ##### Dealing with the up file from clustering step                                                                                                          
-count_up = `grep "chimera" #{sample}_uparse_s2.up -c`
+count_up = `grep "chimera" post_uparse.up -c`
 filt_2.chimera_in_clustering = count_up.to_i
 
 ##### Dealing with the chimeras file
-if File.zero?("#{sample}_OTU_chimeras_s3.fa")                                                                                                               
+if File.zero?("post_OTU_chimeras.fa")                                                                                                               
   filt_2.chimera_in_uchime = 0
 else
-	chimera_open = Bio::FlatFile.auto("#{sample}_OTU_chimeras_s3.fa")
+	chimera_open = Bio::FlatFile.auto("post_OTU_chimeras.fa")
 	count_chimera = chimera_open.to_a.count
   filt_2.chimera_in_uchime = count_chimera
 end 
 
 ##### Dealing with uchime file for getting the ambiguous OTUs                                                                                                                                
-count_uchime = `grep "?" #{sample}_OTU_uchime_s3.txt -c`
-uchime_file = File.open("#{sample}_OTU_uchime_s3.txt", 'r')
+count_uchime = `grep "?" post_OTU_uchime_output.txt -c`
+uchime_file = File.open("post_OTU_uchime_output.txt", 'r')
 ambi_otu_size = []
 uchime_file.each do |line|
   if line.include?("?")
@@ -48,9 +49,9 @@ end
 filt_2.ambiguous_in_uchime = count_uchime.to_i
 
 ##### Dealing with OTU table and utax file.... Mapping the two!
-otus = `wc -l #{sample}_OTU_table_s4.txt`
+otus = `wc -l post_OTU_table.txt`
 filt_2.num_of_otus = otus.split(" ")[0]                                                                                              
-otu_table_file = File.open("#{sample}_OTU_table_s4.txt", "r")
+otu_table_file = File.open("post_OTU_table.txt", "r")
 otu_table_hash = {}
 otu_table_file.each do |line|
   line_array = line.split("\t")
@@ -58,7 +59,7 @@ otu_table_file.each do |line|
 end
 #puts otu_table_hash.sort                                                                                                                                         
 
-utax_table_file = File.open("#{sample}_reads_s5.utax", "r")
+utax_table_file = File.open("post_reads.utax", "r")
 utax_table_hash = {}
 utax_table_hash["#OTU ID"] = "Assignment"
 size_hash = {}
@@ -77,7 +78,7 @@ otu_table_hash.sort.each do |key, value|
 end
 
 ##### Getting the number of reads which din't get mapped in the usearch_global command
-unmapped_usearch_global_file = Bio::FlatFile.auto("#{sample}_unmapped_userach_global.fa")
+unmapped_usearch_global_file = Bio::FlatFile.auto("post_unmapped_userach_global.fa")
 unmapped_hash = {}
 unmapped_usearch_global_file.each do |entry|
 	sample_name = entry.definition.split(";")[1].split("=")[1]
