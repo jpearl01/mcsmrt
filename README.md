@@ -6,11 +6,11 @@ MCSMRT is a tool for microbiome analysis of PacBio data. This tool is a pipeline
 
 ### Installation and Dependencies: 
 1. Ruby v2.2.1 or greater
-   To install dependencies run the command 
+   To install dependencies run the command   
    `$ bundle`
 2. BWA https://sourceforge.net/projects/bio-bwa/files/
 3. Sambamba http://lomereiter.github.io/sambamba/
-4. Usearch v8.1 from http://www.drive5.com/usearch/download.html .  
+4. Usearch v8.1 from http://www.drive5.com/usearch/download.html. Download and softlink using the command    
    `$ln -s usearch8.1.*_i86linux* ~/bin/usearch`
 
 ### Requirements:
@@ -72,6 +72,10 @@ We used our custom made database file which uses a tool called Lineanator for th
   * HOST_GENOME_DB (-g) – This file is used as a reference to filter out those sequences which map to the host genome. It should be a FASTA format file. 
   * PRIMERS_DB (-p) – This is the FASTA format primer file that you created for primer matching and trimming.
   * TRIMMING (-m), Default (yes) – Give “yes” if you want the sequences to be trimmed/primer sequences to be removed, and no if you don’t. 
+
+
+### Output files explained:
+![alt text](https://github.com/jpearl01/mcsmrt/blob/master/file_names.png "File names and description")
 
 ### Built with:  
 ruby 2.2.1p85 (2015-02-26 revision 49769) [x86_64-linux]
