@@ -2,7 +2,7 @@
 require 'bio'
 require 'trollop'
 
-#USAGE: ruby ../mcsmrt/mcsmrt_v1.rb -a -f reads/ -d 32 -e 1 -s 5 -x 2000 -n 500 -c ../rdp_gold.fa -t ../lineanator/16sMicrobial_ncbi_lineage_reference_database.udb -l ../lineanator/16sMicrobial_ncbi_lineage.fasta -g ../human_g1k_v37.fasta -p ../primers.fasta -b ../mcsmrt/ncbi_clustered_table.tsv
+#USAGE: ruby ../mcsmrt/mcsmrt_v1.rb -a -f reads/ -d 32 -e 1 -s 5 -x 2000 -n 500 -c ../rdp_gold.fa -t ../lineanator/16sMicrobial_ncbi_lineage_reference_database.udb -l ../lineanator/16sMicrobial_ncbi_lineage.fasta -g ../human_g1k_v37.fasta -p ../primers.fasta -b ../mcsmrt/ncbi_clustered_table.tsv -v
 
 opts = Trollop::options do
   opt :allFiles, "Use all files in the given directory name for clustering", :short => "-a"
@@ -20,6 +20,7 @@ opts = Trollop::options do
   opt :host_db, "Path to fasta file of host genome", :type => :string, :short => "-g"
   opt :primerfile, "Path to fasta file with the primer sequences", :type => :string, :short => "-p"
   opt :ncbiclusteredfile, "Path to a file with database clustering information", :type => :string, :short => "-b"
+  opt :verbose, "Use -v if you want all the intermediate files, else the 6 important results file will be kept and the rest will be deleted", :short => "-v"
 end 
 
 ##### Assigning variables to the input and making sure we got all the inputs
@@ -38,6 +39,12 @@ end
 if opts[:allFiles] == false and opts[:samplelist] == nil
   abort("Must specify if you want to use all files in the folder with '-a' or give a file with a list of file names for clustering with '-i'")
 end
+
+if opts[:verbose] == true     
+  verbose = true   
+else
+  verbose = nil   
+end  
 
 opts[:foldername].nil?        ==false  ? folder_name = opts[:foldername]              : abort("Must supply the name of the folder in which the demultiplexed files exist with '-f'")
 opts[:uchimedbfile].nil?      ==false  ? uchime_db_file = opts[:uchimedbfile]         : abort("Must supply a 'uchime database file' e.g. rdpgold.udb with '-c'")
@@ -138,7 +145,7 @@ end
 
 ##### Method whcih takes an fq file as argument and returns a hash with the read name and ee
 def get_ee_from_fq_file (file_basename, ee, suffix)
-	`usearch -fastq_filter #{file_basename}.fq -fastqout #{suffix} -fastq_maxee 20000 -fastq_qmax 75 -fastq_eeout -sample all`
+	`usearch -fastq_filter #{file_basename}.fq -fastqout #{suffix} -fastq_maxee 20000 -fastq_qmax 127 -fastq_qmaxout 127 -fastq_eeout -sample all`
 	
   abort("!!!!Expected error filtering with usearch failed!!!!") if File.zero?("#{suffix}")
 
@@ -332,6 +339,7 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
     # Fill the all_bc_hash with some basic info that we can get (read_name, barcode, ccs, length_pretrim)
     if def_split[1].include?("barcodelabel")
       basename = def_split[1].split("=")[1]
+      #puts basename
       barcode = basename.split("_")[0]
       sample = basename.split("_")[1..-1].join("_")
       ccs = def_split[2].split("=")[1].to_i
@@ -575,15 +583,19 @@ file_for_usearch_global.close
 # Dealing with the dereplicated file 
 derep_open =  Bio::FlatFile.auto("post_dereplicated.fa")                                                                                                     
 derep_open.each do |entry|
-  basename = entry.definition.split(";")[1].split("=")[1]
+  def_split = entry.definition.split(";")
+  basename_ind = def_split.index{|s| s.include?("barcodelabel")}
+  basename = def_split[basename_ind].split("=")[1]
   report_hash[basename].derep_filt += 1
 end
 
 # Dealing with the up file from clustering step
 uparse_open = File.open("post_uparse.up")
 uparse_open.each do |line|
-  line_split = line.split("\t")
-  basename = line_split[0].split(";")[1].split("=")[1]
+  line_split = line.split("\t")[0].split(";")
+  basename_ind = line_split.index{|s| s.include?("barcodelabel")}
+  basename = line_split[basename_ind].split("=")[1]
+  #puts basename
   type = line_split[1]
   if type != "chimera"
     report_hash[basename].chimera_filt += 1
@@ -603,5 +615,32 @@ report_hash.each do |key, value|
                     value.ee_filt,
                     value.derep_filt,
                     value.chimera_filt].join("\t"))
+end
+
+if verbose == true
+  abort
+else
+  File.delete("post_dereplicated.fa")
+  File.delete("post_OTU_alignment.aln")
+  File.delete("post_OTU_blast.txt")
+  File.delete("post_OTU_chimeras.fa")
+  File.delete("post_OTU_nonchimeras.fa")
+  File.delete("post_OTU_table.txt")
+  File.delete("post_OTU_table_utax_map.txt")
+  File.delete("post_OTU_uchime_output.txt")
+  File.delete("post_readmap.uc")
+  File.delete("post_reads.utax")
+  File.delete("post_unmapped_userach_global.fa")
+  File.delete("post_uparse.up")
+  File.delete("pre_ee_pretrim.fq")
+  File.delete("pre_filt_non_host.fq")
+  File.delete("pre_host_mapped.txt")
+  File.delete("pre_map_to_host.bam")
+  File.delete("pre_map_to_host.sam")
+  File.delete("pre_primer_map_info.txt")
+  File.delete("pre_primer_map.txt")
+  File.delete("pre_sequences_for_clustering.fq")
+  File.delete("pre_sequences_for_usearch_global.fq")
+  File.delete("pre_trimmed_and_oriented.fq")
 end
 #=end

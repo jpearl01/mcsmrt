@@ -2,7 +2,7 @@
 ## Microbiome Classifier for SMRT PacBio data
 
 ### Introduction:
-MCSMRT is a tool for microbiome analysis of PacBio data. This tool is a pipeline to go from raw PacBio data to clustered sequences (OTUs or Operational Taxonomic Units).  The outputs include a table of the number of reads assigned to each OTU and taxonomic lineage associated with each OTU. Another output consists of general information regarding each read, for example, CCS count, expected error, length, primer matching result, etc. 
+MCSMRT is a tool for microbiome analysis of PacBio data. This tool acts as a pipeline to go from raw PacBio data to clustered sequences (OTUs or Operational Taxonomic Units). The outputs include a table eith the number of reads assigned to each OTU and taxonomic lineage associated with each OTU. Another output file which consists of general information regarding each read, for example, CCS count, expected error, length, primer matching result, etc., is created for convinience with downstream data analysis. 
 
 ### Installation and Dependencies: 
 1. Ruby v2.2.1 or greater
@@ -13,14 +13,17 @@ MCSMRT is a tool for microbiome analysis of PacBio data. This tool is a pipeline
 4. Usearch v8.1 from http://www.drive5.com/usearch/download.html. Download and softlink using the command    
    `$ln -s usearch8.1.*_i86linux* ~/bin/usearch`
 
-### Requirements:
-Fasta file of forward and reverse primer sequences. (For more information on FASTA file formats, refer https://en.wikipedia.org/wiki/FASTA_format).
+### Prerequisites:
+Fasta file of forward and reverse primer sequences (For more information on FASTA file formats, refer https://en.wikipedia.org/wiki/FASTA_format).
 
-Fasta formatted taxonomy classification database (NCBI database included in this repository)
+** TO-DO- Add the lineanator results file somewhere **
+USEARCH formatted taxonomy classification database is required for assigning taxonomy to OTUs. If you want to create your own udb file, refer http://www.drive5.com/usearch/manual/cmd_makeudb_utax.html (NCBI databse included repository). We used a custom database created using NCBI's 16s repository and taxonomy data. The tool which generates this database is called Lineanator and is available for use in - https://github.com/bhatarchanas/lineanator. 
 
-Usearch formatted taxonomy classification database see: If you want to create your own udb file, refer http://www.drive5.com/usearch/manual/cmd_makeudb_utax.html (NCBI databse included repository)
+Fasta formatted taxonomy classification database. Same as above, just formatted as a FASTA file. This file too can be obtained from Lineanator.  
 
-rdp_gold database for chimera detection: http://drive5.com/uchime/gold.fa
+Clustering results from the database that was used for assigning taxonomy. ** TO-DO- Add that file for ppl to use? **
+
+rdp_gold database for chimera detection - http://drive5.com/uchime/gold.fa
 
 Host genome file, for filtering sequences mapping to host genome
 
@@ -28,20 +31,21 @@ Host genome file, for filtering sequences mapping to host genome
 First and foremost, you will need a FASTA file with primer sequences used for your project. Go ahead and create the file with all the primer sequences used and store it in your working directory.
 This file is used for matching sequences to primers and trimming (which is optional). This file is referred to as PRIMERS_DB and is one of the inputs for the mcsmrt.rb script.
 
-There are 2 methods/routes you can choose from, in order to run your PacBio data through the microbiome classifier. 
+There are 2 methods/routes you can use to run your PacBio data through this microbiome classifier. 
 
 #### Method 1: For cases when you have already demultiplexed your samples
   * Step 1: Run get_fastqs.rb in order to obtain CCS counts and barcode information as a part of the FASTQ headers. This step also copies the demultiplexed FASTQ files into a folder. Folder name in which the files are stored should be given by you as an argument.  
     Command:    
     ruby get_fastqs.rb [-h] [-s SAMPLE_INFO_FILE] [-o OUTPUT_FOLDER_NAME]  
 
-  * Step 2: Run mcsmrt.rb in order to obtain detailed information about each read and find the clusters (OTUs) created. This step in-turn can be used in 2 ways. 
+  * Step 2: Run mcsmrt_v1.rb in order to obtain detailed information about each read and find the clusters (OTUs) created. This step in-turn can be used in 2 ways. 
     Specify that all the files in a given directory can be used for clustering (usually when all the files belong to the same project), or, provide a file with a list of file names which can be clustered together.
     Command:  
-    ruby mcsmrt.rb [-h]  
-[-a] / [-i LIST_OF_FILES_FOR_CLUSTEIRNG] [-f FOLDER_NAME] [-m TRIMMING]  
-[-e EXPECTED_ERROR] [-s CCS_COUNT] [-x MAXIMUM_LENGTH] [-n MINIMUM_LENGTH]  
-[-c UCHIME_DB] [-t UTAX_DB] [-l BLAST_DB] [-g HOST_GENOME_DB] [-p PRIMERS_DB]                                                                                        
+    ruby mcsmrt_v1.rb [-h]  
+	[-a] / [-i LIST_OF_FILES_FOR_CLUSTEIRNG] [-f FOLDER_NAME] [-m TRIMMING]  
+	[-e EXPECTED_ERROR] [-s CCS_COUNT] [-x MAXIMUM_LENGTH] [-n MINIMUM_LENGTH]  
+	[-c UCHIME_DB] [-t UTAX_DB] [-l BLAST_DB] [-g HOST_GENOME_DB] [-p PRIMERS_DB]
+	[-d THREADS] [-b NCBI_CLUSTERED_FILE] [-v VERBOSE]                                                                                        
 
 #### Method 2: For cases when you have to demultiplex your samples and then run it through the microbiome classifier
   * Step 1: Demultiplex using Rachel’s demultiplexing pipeline (https://github.com/rehrlich/ccs_smrt_pipe). This pipeline also results in FASTQ files which have a format that is compatible with mcsmrt.rb script for microbiome analysis. 
@@ -72,6 +76,8 @@ We used our custom made database file which uses a tool called Lineanator for th
   * HOST_GENOME_DB (-g) – This file is used as a reference to filter out those sequences which map to the host genome. It should be a FASTA format file. 
   * PRIMERS_DB (-p) – This is the FASTA format primer file that you created for primer matching and trimming.
   * TRIMMING (-m), Default (yes) – Give “yes” if you want the sequences to be trimmed/primer sequences to be removed, and no if you don’t. 
+  * THREADS (-d) - This option lets you provide the number of threads available for use by the software. Default is 1. 
+  * NCBI_CLUSTERED_FILE (-b) - 
 
 
 ### Output files explained:

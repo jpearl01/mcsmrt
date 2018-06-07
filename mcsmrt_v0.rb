@@ -2,7 +2,7 @@
 require 'bio'
 require 'trollop'
 
-#USAGE: ruby ../mcsmrt/mcsmrt.rb -d 32 -a -f reads/ -e 1 -s 5 -x 2000 -n 500 -c ../rdp_gold.fa -t ../lineanator/16sMicrobial_ncbi_lineage_reference_database.udb -l ../lineanator/16sMicrobial_ncbi_lineage.fasta -g ../human_g1k_v37.fasta -p ../primers.fasta
+#USAGE: ruby ../mcsmrt/mcsmrt_v0.rb -d 32 -a -f reads/ -e 1 -s 5 -x 2000 -n 500 -c ../rdp_gold.fa -t ../lineanator/16sMicrobial_ncbi_lineage_reference_database.udb -l ../lineanator/16sMicrobial_ncbi_lineage.fasta -g ../human_g1k_v37.fasta -p ../primers.fasta -b ../mcsmrt/ncbi_clustered_table.tsv -o yes -h before
 
 ##### Input 
 opts = Trollop::options do
@@ -20,11 +20,14 @@ opts = Trollop::options do
   opt :lineagefastafile, "Path to FASTA file with lineage info for the ublast command", :type => :string, :short => "-l"
   opt :host_db, "Path to fasta file of host genome", :type => :string, :short => "-g"
   opt :primerfile, "Path to fasta file with the primer sequences", :type => :string, :short => "-p"
+  opt :ncbiclusteredfile, "Path to a file with database clustering information", :type => :string, :short => "-b"
+  opt :splitotu, "Do you want to split OTUs into individual fasta files? Answer in yes or no", :type => :string, :short => "-o", :default => "no"
+  opt :splitotumethod, "If you chose yes to split OTUs, do it before or after EE filtering? Answer in before or after", :type => :string, :short => "-h", :default => "after"
 end 
 
 ##### Assigning variables to the input and making sure we got all the inputs
 if opts[:allFiles] == true     
-  all_files = "*.fq"  
+  all_files = "*"  
 else
   all_files = nil   
 end  
@@ -45,6 +48,7 @@ opts[:utaxdbfile].nil?        ==false  ? utax_db_file = opts[:utaxdbfile]       
 opts[:lineagefastafile].nil?  ==false  ? lineage_fasta_file = opts[:lineagefastafile] : abort("Must supply a 'lineage fasta file' e.g. ncbi_lineage.fasta (for blast) with '-l'")
 opts[:host_db].nil?           ==false  ? human_db = opts[:host_db]                    : abort("Must supply a fasta of the host genome e.g. human_g1k.fasta with '-g'")
 opts[:primerfile].nil?        ==false  ? primer_file = opts[:primerfile]              : abort("Must supply a fasta of the primer sequences e.g primer_seqs.fa with '-p'")
+opts[:ncbiclusteredfile].nil? ==false  ? ncbi_clust_file = opts[:ncbiclusteredfile]   : abort("Must supply a file with database clustering information with '-b'")
 
 thread = opts[:threads].to_i
 ee = opts[:eevalue].to_f 
@@ -52,6 +56,8 @@ trim_req = opts[:trimming].to_s
 ccs = opts[:ccsvalue].to_i 
 length_max = opts[:lengthmax].to_i 
 length_min = opts[:lengthmin].to_i 
+split_otus = opts[:splitotu].to_s
+split_otu_method = opts[:splitotumethod].to_s
 
 ##### Get the path to the directory in which the scripts exist 
 script_directory = File.dirname(__FILE__)
@@ -600,7 +606,7 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
     	end
     else
     	# No trimming, only orient sequences using the orient method
-		seq_oriented, qual_oriented = orient(all_reads_hash[k].f_primer_matches, all_reads_hash[k].r_primer_matches, all_reads_hash[k].read_orientation, all_reads_hash[k].half_primer_match, seqs_hash[k][0], seqs_hash[k][1])
+		  seq_oriented, qual_oriented = orient(all_reads_hash[k].f_primer_matches, all_reads_hash[k].r_primer_matches, all_reads_hash[k].read_orientation, all_reads_hash[k].half_primer_match, seqs_hash[k][0], seqs_hash[k][1])
     	
     	if seq_oriented == ""
       		# Add the length_postrim info to the all_reads_hash
@@ -618,9 +624,9 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
       		trimmed_hash[seqs_hash[k][2]] = [seq_oriented, qual_oriented]
     	end
     end
-    
-    # Write all reads to output file
+
     all_info_out_file.puts("#{k}\t#{all_reads_hash[k].basename}\t#{all_reads_hash[k].ccs}\t#{all_reads_hash[k].barcode}\t#{all_reads_hash[k].sample}\t#{all_reads_hash[k].ee_pretrim}\t#{all_reads_hash[k].ee_posttrim}\t#{all_reads_hash[k].length_pretrim}\t#{all_reads_hash[k].length_posttrim}\t#{all_reads_hash[k].host_map}\t#{all_reads_hash[k].f_primer_matches}\t#{all_reads_hash[k].r_primer_matches}\t#{all_reads_hash[k].f_primer_start}\t#{all_reads_hash[k].f_primer_end}\t#{all_reads_hash[k].r_primer_start}\t#{all_reads_hash[k].r_primer_end}\t#{all_reads_hash[k].read_orientation}\t#{all_reads_hash[k].primer_note}\t#{all_reads_hash[k].half_primer_match}")
+
   end
 
   # Close the output file in which the trimmed and oriented seqs were written
@@ -679,11 +685,30 @@ file_for_usearch_global.close
 
 # Running the command to give a report of counts
 `ruby #{script_directory}/get_report.rb #{final_fastq_basename}`
-  
+
 # Running blast on the OTUs                                                                                                                            
-`usearch -ublast #{final_fastq_basename}_OTU_s2.fa -db #{lineage_fasta_file} -top_hit_only -id 0.9 -blast6out #{final_fastq_basename}_blast.txt -strand both -evalue 0.01 -threads 15 -accel 0.3`
+`usearch -ublast post_OTU_nonchimeras.fa -db #{lineage_fasta_file} -top_hit_only -id 0.9 -blast6out post_OTU_blast.txt -strand both -evalue 0.01 -threads #{thread} -accel 0.3`
 
 # Running the script whcih gives a final file with all the clustering info, taxa info and blast info
-`ruby #{script_directory}/final_parsing.rb -b #{final_fastq_basename}_blast.txt -u #{final_fastq_basename}_OTU_table_utax_map.txt -o #{final_fastq_basename}_final.txt`
+`ruby #{script_directory}/final_parsing.rb -b post_OTU_blast.txt -u post_OTU_table_utax_map.txt -n #{ncbi_clust_file} -o post_final_results.txt`
+
+# Run usearch on all the reads
+`usearch -utax #{all_bc_reads_file} -db #{utax_db_file} -utaxout all_bc_reads.utax -utax_cutoff 0.8 -strand both`
+
+# Run ruby script to merge the all_bc_info file and all_bc_utax files
+`ruby #{script_directory}/merge_all_info_and_utax.rb`    
+
+if(File.directory?('split_otus')) 
+  `rm -rf split_otus`
+  `mkdir split_otus`
+else
+  `mkdir split_otus` 
+end
+
+if split_otus == "yes" and split_otu_method == "before"
+  `ruby #{script_directory}/extract_seqs_for_each_otu_noEEfilt.rb -u post_OTU_nonchimeras.fa -p post_usearch_glob_results.txt -a sequences_for_usearch_global.fq`
+elsif split_otus == "yes" and split_otu_method == "after"
+  `ruby #{script_directory}/extract_seqs_for_each_otu.rb -u post_OTU_nonchimeras.fa -p post_uparse.up -a post_dereplicated.fa`
+end 
 
 #=end

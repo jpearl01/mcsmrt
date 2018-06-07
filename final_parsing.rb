@@ -61,6 +61,7 @@ ncbi_clustered_file.each_with_index do |line, index|
 	end 
 end
 #puts ncbi_clustered_hash["Microbacter_margulisiae"]
+#puts ncbi_clustered_hash
 
 header = File.open(otu_utax_file, &:readline)
 header_split = header.split("\t")[0..-2].join("\t")
@@ -74,8 +75,17 @@ otu_utax_file.each_with_index do |line, index|
         line_split = line.split("\t")
         key = line_split[0]
         capture_array = /d:([^(]+)\(([^)]+)\),p:([^(]+)\(([^)]+)\),c:([^(]+)\(([^)]+)\),o:([^(]+)\(([^)]+)\),f:([^(]+)\(([^)]+)\),g:([^(]+)\(([^)]+)\),s:([^(]+)\(([^)]+)\)/.match(line)
-        #puts capture_array[1]+"\t"+capture_array[2]+"\t"+capture_array[3]+"\t"+capture_array[4]+"\t"+capture_array[5]+"\t"+capture_array[6]+"\t"+capture_array[7]+"\t"+capture_array[8]+"\t"+capture_array[9]+"\t"+capture_array[10]+"\t"+capture_array[11]+"\t"+capture_array[12]+"\t"+capture_array[13]
-        next unless blast_file_hash.has_key?(key)
-        out_file.puts(line_split[0..-2].join("\t")+"\t"+capture_array[1..-1].join("\t")+"\t"+blast_file_hash[key][0..-1].join("\t")+"\t"+ncbi_clustered_hash[capture_array[13]].join("\t"))
+        #puts capture_array
+        puts capture_array[1]+"\t"+capture_array[2]+"\t"+capture_array[3]+"\t"+capture_array[4]+"\t"+capture_array[5]+"\t"+capture_array[6]+"\t"+capture_array[7]+"\t"+capture_array[8]+"\t"+capture_array[9]+"\t"+capture_array[10]+"\t"+capture_array[11]+"\t"+capture_array[12]+"\t"+capture_array[13]
+        #next unless blast_file_hash.has_key?(key)
+        if ncbi_clustered_hash.has_key?(capture_array[13]) and blast_file_hash.has_key?(key)
+        	out_file.puts(line_split[0..-2].join("\t")+"\t"+capture_array[1..-1].join("\t")+"\t"+blast_file_hash[key][0..-1].join("\t")+"\t"+ncbi_clustered_hash[capture_array[13]].join("\t"))
+		elsif blast_file_hash.has_key?(key)
+			out_file.puts(line_split[0..-2].join("\t")+"\t"+capture_array[1..-1].join("\t")+"\t"+blast_file_hash[key][0..-1].join("\t")+"\tNA\tNA\tNA\tNA")
+		elsif ncbi_clustered_hash.has_key?(capture_array[13]) 
+			out_file.puts(line_split[0..-2].join("\t")+"\t"+capture_array[1..-1].join("\t")+"\tNA\tNA\tNA\tNA\tNA\t"+ncbi_clustered_hash[capture_array[13]].join("\t"))
+		else
+			out_file.puts(line_split[0..-2].join("\t")+"\t"+capture_array[1..-1].join("\t")+"\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA")
+		end
 	end	
 end

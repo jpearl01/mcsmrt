@@ -1,5 +1,6 @@
 require 'bio'
 require 'trollop'
+require 'fileutils'
 
 #USAGE: ruby ../mcsmrt/get_fastqs.rb -s #{sample_key_file} -o #{all_bc_reads_output_folder} 
 
@@ -73,6 +74,7 @@ end
 
 ##### Get the tarred_folder containging the fastq files and untar it 
 def get_tarred_folder (samps)
+	#puts samps.inspect
 	if samps[0].end_with?("/")
 		curr_file = samps[0] + "data/barcoded-fastqs.tgz"
 		abort("The file #{curr_file} does not exist!") if !File.exists?(curr_file)
@@ -85,7 +87,12 @@ def get_tarred_folder (samps)
 end
 
 ##### Get the ccs counts
-def get_ccs_counts (samps, script_directory)   
+def get_ccs_counts (samps, script_directory) 
+
+	if File.exists?("passes")
+		FileUtils.rm_f("passes")
+	end
+
 	if samps[0].end_with?("/")                                                                                                      
   		curr_files_ccs = samps[0] + "data/*.ccs.h5"
   		`python #{script_directory}/ccs_passes.py #{curr_files_ccs} >> passes`
@@ -107,41 +114,15 @@ def get_ccs_counts (samps, script_directory)
   	return ccs_hash
 end
 
-##### Get barcode nums or nick names for each barcode pair 
-def get_barcode_nums (samps)
-	barcode_hash = {}
-	count = 0
-	samps[1].each do |rec|
-		#puts rec.rev_barcode
-		#puts rec.fow_barcode
-		key = "#{rec.fow_barcode}--#{rec.rev_barcode}"
-		if barcode_hash.key?(key)
-			next
-		else
-			count += 1
-			barcode_hash[key] = count
-		end 
-	end
-
-	barcode_num_out_file = File.open("barcode_num_for_pairs.txt", "w")
-	barcode_num_out_file.puts("barcode_pair\tbarcode_num")
-	barcode_hash.each do |key, value|
-		barcode_num_out_file.puts(key+"\t"+value.to_s)
-	end
-
-	return barcode_hash
-end
-
 ##### Process each file from the tarred folder and get one file with all the reads
 def process_each_file (samps, log, output_folder, ccs_hash)
   	# Write the status of whether the file was processed or not in the log file
-  	log.puts("STATUS: BarcodeNum_Sample")
-
-  	# Call the method which create a barcode nick-names file
-  	barcode_hash = get_barcode_nums(samps)
+  	log.puts("STYLE: Sample;Barcode")
 
   	# Loop through each sample pointing to a job id
   	samps[1].each do |rec|
+  		#puts samps[1].inspect
+
   		# Opening the file with the original reads are written along with the extra info
   		if File.exists?("#{output_folder}/#{rec.sample}.fq")
   			abort("Unique sample names must be provided. Sample name #{rec.sample} exists multiple times.")
@@ -149,9 +130,7 @@ def process_each_file (samps, log, output_folder, ccs_hash)
   			all_bc_reads = File.open("#{output_folder}/#{rec.sample}.fq", "w")
   		end
 
-  		barcode_num = barcode_hash["#{rec.fow_barcode}--#{rec.rev_barcode}"]
-    	base_name = "#{barcode_num}_#{rec.sample}"
-    	bc = "barcodelabel=#{base_name}\;"
+    	bc = "barcodelabel=#{rec.sample}\;barcode=#{rec.fow_barcode}--#{rec.rev_barcode}\;"
     	fq = ''
     
     	# Getting the appropriate fq file based on the barcode
@@ -159,8 +138,8 @@ def process_each_file (samps, log, output_folder, ccs_hash)
 
     	# Do the rest only if that fq file exits
     	if File.exists?(fq)
-    		log.puts("FOUND: #{base_name}")
-      		puts base_name
+    		log.puts("FOUND: #{rec.sample};#{rec.fow_barcode}--#{rec.rev_barcode}")
+      		puts "#{rec.sample};#{rec.fow_barcode}--#{rec.rev_barcode}"
       
       		# Add in the barcode and ccs count to the fastq header
       		fh = Bio::FlatFile.auto(fq)			
@@ -168,17 +147,17 @@ def process_each_file (samps, log, output_folder, ccs_hash)
 				new_header_raw = entry.definition.split[0]
         		if ccs_hash.has_key?(entry.definition.split[0])
           			ccs = "ccs=#{ccs_hash[entry.definition.split[0]]};"
-          			new_header = new_header_raw + ";" + bc + ccs
+          			new_header = new_header_raw + ";" + ccs + bc
         		else
           			ccs = "ccs=nil;"
-          			new_header = new_header_raw + ";" + bc + ccs
+          			new_header = new_header_raw + ";" + ccs + bc
         		end
         
        			# Write all the reads into the output file which was provided
         		write_to_fastq(all_bc_reads, "#{new_header}", entry.naseq.upcase, entry.quality_string) 
 			end
 		else
-			log.puts("NOT FOUND: #{base_name}")	
+			log.puts("NOT FOUND: #{rec.sample};#{rec.fow_barcode}--#{rec.rev_barcode}")	
 		end
 
 		# Close the file in which all the reads were written
@@ -208,9 +187,8 @@ pb_projects.each do |id, samps|
 	
 	# Create a directory which will hold the raw data fq files 
 	if Dir.exists?("raw_data")
-		Dir.glob("raw_data/*.fq") do |fq_file|
-  			fq_file.delete
-		end
+		FileUtils.rm_rf("raw_data")
+		Dir.mkdir("raw_data")
 	else
 		Dir.mkdir("raw_data")
 	end
@@ -225,6 +203,6 @@ pb_projects.each do |id, samps|
 end
 
 # Delete the raw data files 
-`rm -rf raw_data`
+FileUtils.rm_rf("raw_data")
 
 ##########################################################
