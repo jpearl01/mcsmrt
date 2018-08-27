@@ -77,7 +77,10 @@ We used our custom made database file which uses a tool called Lineanator for th
   * PRIMERS_DB (-p) – This is the FASTA format primer file that you created for primer matching and trimming.
   * TRIMMING (-m), Default (yes) – Give “yes” if you want the sequences to be trimmed/primer sequences to be removed, and no if you don’t. 
   * THREADS (-d) - This option lets you provide the number of threads available for use by the software. Default is 1. 
-  * NCBI_CLUSTERED_FILE (-b) - 
+  * NCBI_CLUSTERED_FILE (-b) - This option helps obtain information about the database OTUs which clustered together.
+  * VERBOSE (-v) - Delete intermediate files or not? 
+  * SPLIT_OTU (-o) - Do you want to split reads into separate FASTA files based on the OTUs they match to? Answer in yes or no. 
+  * SPLIT_OTU_METHOD (-h) - Do you want to split reads into separate OTUs before or after EE filtering? Works only if -o is yes. Answer in before or after. 
 
 
 ### Output files explained:
@@ -108,7 +111,7 @@ This section is a walk through for how to use MCSMRT using sample data from BEI 
    $ ruby ~/mcsmrt/get_fastqs.rb -s sample_key.txt -o reads  
    On successful completion, a folder called reads should be created along with the FASTQ files.  
 8) The last step is to run the mcsmrt.rb script which does most of the heavy lifting and produces an OTU table with taxonomies for each OTU. The command that should be run for this purpose is as follows  
-   $ ruby ~/mcsmrt/mcsmrt_v0.rb -d num_of_threads_available -a -f reads/ -e 1 -s 5 -x 2000 -n 500 -c ~/mcsmrt/tutorial/rdp_gold.fa -t ~/mcsmrt/tutorial/16sMicrobial_ncbi_lineage_reference_database.udb -l ~/mcsmrt/tutorial/16sMicrobial_ncbi_lineage.fasta -g /path/to/human/genome/fasta -p ~/mcsmrt/tutorial/primers.fasta -b ~/mcsmrt/ncbi_clustered_table.tsv  
+   $ ruby ~/mcsmrt/mcsmrt_v1.rb -a -f reads/ -d num_of_threads_available -e 1 -s 5 -x 2000 -n 500 -c ~/mcsmrt/tutorial/rdp_gold.fa -t ~/mcsmrt/tutorial/16sMicrobial_ncbi_lineage_reference_database.udb -l ~/mcsmrt/tutorial/16sMicrobial_ncbi_lineage.fasta -g /path/to/human/genome/fasta -p ~/mcsmrt/tutorial/primers.fasta -b ~/mcsmrt/ncbi_clustered_table.tsv -v  
    With the -d option, provide the number of threads. With the -g option, provide the path to the complete human genome in FASTA format. The other input files required to run this script are provided in the tutorial folder.  
 
 ### Built with:  
