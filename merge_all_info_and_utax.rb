@@ -1,6 +1,6 @@
-all_bc_info = File.open("all_bc_reads_info.txt")
+all_bc_info = File.open("pre_all_reads_info.txt")
 all_bc_utax = File.open("all_bc_reads.utax")
-outfile = File.open("all_bc_reads_info_with_taxa.txt", "w")
+outfile = File.open("pre_all_bc_reads_info_with_taxa.txt", "w")
 
 utax_header = "Domain\tDomain_conf\tPhylum\tPhylum_conf\tClass\tClass_conf\tOrder\tOrder_conf\tFamily\tFamily_conf\tGenus\tGenus_conf\tSpecies\tSpecies_conf"
 utax_hash = {}

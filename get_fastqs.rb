@@ -76,11 +76,11 @@ end
 def get_tarred_folder (samps)
 	#puts samps.inspect
 	if samps[0].end_with?("/")
-		curr_file = samps[0] + "data/barcoded-fastqs.tgz"
+		curr_file = samps[0] + "barcoded-fastqs.tgz"
 		abort("The file #{curr_file} does not exist!") if !File.exists?(curr_file)
 		`tar xvf #{curr_file} -C raw_data/`
 	else
-		curr_file = samps[0] + "/data/barcoded-fastqs.tgz"
+		curr_file = samps[0] + "barcoded-fastqs.tgz"
 		abort("The file #{curr_file} does not exist!") if !File.exists?(curr_file)
 		`tar xvf #{curr_file} -C raw_data/`
 	end
