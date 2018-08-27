@@ -1,0 +1,5 @@
+PB_jobid	data_path	forward_barcode	reverse_barcode	sample_name	note
+17094	/path/to/data/files/directory/	0001_Forward	0002_Forward	A_22_gotaq	NA
+17094	/path/to/data/files/directory/	0003_Forward	0004_Forward	A_hum_22_gotaq	NA
+17094	/path/to/data/files/directory/	0005_Forward	0006_Forward	A_22_accu	NA
+17094	/path/to/data/files/directory/	0007_Forward	0008_Forward	A_hum_22_accu	NA

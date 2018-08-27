@@ -94,10 +94,10 @@ def get_ccs_counts (samps, script_directory)
 	end
 
 	if samps[0].end_with?("/")                                                                                                      
-  		curr_files_ccs = samps[0] + "data/*.ccs.h5"
+  		curr_files_ccs = samps[0] + "*.ccs.h5"
   		`python #{script_directory}/ccs_passes.py #{curr_files_ccs} >> passes`
   	else
-		curr_files_ccs = samps[0] + "/data/*.ccs.h5"
+		curr_files_ccs = samps[0] + "*.ccs.h5"
 		`python #{script_directory}/ccs_passes.py #{curr_files_ccs} >> passes`
   	end
 	
@@ -179,7 +179,7 @@ end
 
 # Calling the method which counts the number of projects in the sample file
 pb_projects = num_of_projects(sample_file)
-#puts pb_projects
+puts pb_projects.inspect
 
 # Calling the methods which help in producing files with all the reads in the output folder provided.
 pb_projects.each do |id, samps|

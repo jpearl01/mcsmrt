@@ -83,5 +83,29 @@ We used our custom made database file which uses a tool called Lineanator for th
 ### Output files explained:
 ![alt text](https://github.com/jpearl01/mcsmrt/blob/master/file_names.png "File names and description")
 
+### Tutorial:
+This section is a walk through for how to use MCSMRT using sample data from BEI sequencing on PacBio. 
+1) cd to your home directory and clone the MCSMRT repository using 
+   git clone git@github.com:jpearl01/mcsmrt.git 
+   This should create a directory alled mcsmrt in your home. 
+2) Create a new directory called "mcmsrt_tutorial_bei" in your home directory by running 
+   mkdir ~/mcmsrt_tutorial_bei
+   This is there all the analysis will be carried out and results files will be stored. 
+3) Get into the mcmsrt_tutorial_bei folder using 
+   cd ~/mcmsrt_tutorial_bei
+3) Copy the data_stuff.tar.gz from the tutorial folder in the cloned mcmsrt directory to the mcmsrt_tutorial_bei folder. For doing that, run this  
+   cp ~/mcsmrt/tutorial/data_stuff.tar.gz .
+4) Untar the tar.gz file to get a folder with all the sample data files. This can be achieved by running 
+   tar -xzf data_stuff.tar.gz -C data
+   Successful completion should create a folder called data in your current working directory. 
+5) Copy the sample_key.txt file from the tutorial folder in the cloned mcmsrt directory. Place it in mcsmrt_tutorial_bei by running
+   cp ~/mcsmrt/tutorial/sample_key.txt .
+6) Change the data_path column to the FULL PATH where your data folder is located, i.e., the folder that was created after uncompressing the tar.gz file. Do not use relative paths here. 
+7) Run the get_fastqs.rb script to obtain FASTQ files with modified headers. 
+   ruby ~/mcsmrt/get_fastqs.rb -s sample_key.txt -o reads
+   On successful completion, a folder called reads should be created along with the FASTQ files.
+8) The last step is to run the mcsmrt.rb script which does most of the heavy lifting and produces an OTU table with taxonomies for each OTU. The command that should be run for this purpose is as follows
+   ruby ~/mcsmrt/mcsmrt_v0.rb -d num_of_threads_available -a -f reads/ -e 1 -s 5 -x 2000 -n 500 -c ~/mcsmrt/tutorial/rdp_gold.fa -t ~/mcsmrt/tutorial/16sMicrobial_ncbi_lineage_reference_database.udb -l ~/mcsmrt/tutorial/16sMicrobial_ncbi_lineage.fasta -g /path/to/humn/genome/fasta -p ~/mcsmrt/tutorial/primers.fasta -b ~/mcsmrt/ncbi_clustered_table.tsv -o yes -h before 
+
 ### Built with:  
 ruby 2.2.1p85 (2015-02-26 revision 49769) [x86_64-linux]
