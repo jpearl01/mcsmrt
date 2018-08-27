@@ -90,20 +90,20 @@ This section is a walk through for how to use MCSMRT using sample data from BEI 
 1) cd to your home directory and clone the MCSMRT repository using  
    $ cd ~    
    $ git clone git@github.com:jpearl01/mcsmrt.git   
-   This should create a directory alled mcsmrt in your home.   
+   This should create a directory called mcsmrt in your home.   
 2) Create a new directory called "mcmsrt_tutorial_bei" in your home directory by running  
    $ mkdir ~/mcmsrt_tutorial_bei  
-   This is there all the analysis will be carried out and results files will be stored.  
+   This is where all the analysis will be carried out and results files will be stored.  
 3) Get into the mcmsrt_tutorial_bei folder using  
    $ cd ~/mcmsrt_tutorial_bei  
-3) Copy the data_stuff.tar.gz from the tutorial folder in the cloned mcmsrt directory to the mcmsrt_tutorial_bei folder. For doing that, run this    
+3) Copy the data_stuff.tar.gz file from the tutorial folder in the cloned mcmsrt directory to the mcmsrt_tutorial_bei folder. For doing so, run this    
    $ cp ~/mcsmrt/tutorial/data_stuff.tar.gz .  
-4) Untar the tar.gz file to get a folder with all the sample data files. This can be achieved by running  
+4) Untar the tar.gz file to get a folder with all the data files which were obtained as a result of the ROI protocol. This can be achieved by running  
    $ tar -xzf data_stuff.tar.gz -C data  
-   Successful completion should create a folder called data in your current working directory.  
+   Successful completion should create a folder called data in your current working directory. This folder should look exactly like that of the folder obtained from running ROI.  
 5) Copy the sample_key.txt file from the tutorial folder in the cloned mcmsrt directory. Place it in mcsmrt_tutorial_bei by running  
    $ cp ~/mcsmrt/tutorial/sample_key.txt .  
-6) Change the data_path column to the FULL PATH where your data folder is located, i.e., the folder that was created after uncompressing the tar.gz file. Do not use relative paths here.   
+6) Change the data_path column to the FULL PATH where your data folder is located, i.e., the folder that was created after uncompressing the tar.gz file. Do not use relative paths here. Again, this is the folder which looks like an ROI results folder.  
 7) Run the get_fastqs.rb script to obtain FASTQ files with modified headers.  
    $ ruby ~/mcsmrt/get_fastqs.rb -s sample_key.txt -o reads  
    On successful completion, a folder called reads should be created along with the FASTQ files.  
