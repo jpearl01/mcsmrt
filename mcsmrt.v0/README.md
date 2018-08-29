@@ -77,7 +77,7 @@ We used our custom made database file which uses a tool called Lineanator for th
   * PRIMERS_DB (-p) – This is the FASTA format primer file that you created for primer matching and trimming.
   * TRIMMING (-m), Default (yes) – Give “yes” if you want the sequences to be trimmed/primer sequences to be removed, and no if you don’t. 
   * THREADS (-d) - This option lets you provide the number of threads available for use by the software. Default is 1. 
-  * NCBI_CLUSTERED_FILE (-b) - 
+  * NCBI_CLUSTERED_FILE (-b) - This option helps obtain information about the database OTUs which clustered together.
 
 
 ### Output files explained:
