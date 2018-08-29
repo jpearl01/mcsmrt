@@ -81,7 +81,7 @@ We used our custom made database file which uses a tool called Lineanator for th
 
 
 ### Output files explained:
-![alt text](https://github.com/jpearl01/mcsmrt/blob/master/file_names.png "File names and description")
+![alt text](https://github.com/jpearl01/mcsmrt/blob/master/mcsmrt.v0/file_names.png "File names and description")
 
 ### Tutorial:
 This section is a walk through for how to use MCSMRT using sample data from BEI sequencing on PacBio. Before this, CCS and demultiplexing was run on the samples using the Reads of Insert (ROI) protocol from SMRT link. A filtering criteria of minimum number of passes = 5 and predicted accuracy = 90 was used. Successful completion of the ROI protocol creates a results directory in a location/path which is based on how PacBio was configured. A directory similar to the one produced by ROI is in the tutorial folder in mcsmrt's GitHub page. You can then run each of these steps to learn how to use MCSMRT.  
