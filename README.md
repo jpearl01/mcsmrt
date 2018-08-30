@@ -16,12 +16,11 @@ MCSMRT is a tool for microbiome analysis of PacBio data. This tool acts as a pip
 ### Prerequisites:
 Fasta file of forward and reverse primer sequences (For more information on FASTA file formats, refer https://en.wikipedia.org/wiki/FASTA_format).
 
-** TO-DO- Add the lineanator results file somewhere **
 USEARCH formatted taxonomy classification database is required for assigning taxonomy to OTUs. If you want to create your own udb file, refer http://www.drive5.com/usearch/manual/cmd_makeudb_utax.html (NCBI databse included repository). We used a custom database created using NCBI's 16s repository and taxonomy data. The tool which generates this database is called Lineanator and is available for use in - https://github.com/bhatarchanas/lineanator. 
 
 Fasta formatted taxonomy classification database. Same as above, just formatted as a FASTA file. This file too can be obtained from Lineanator.  
 
-Clustering results from the database that was used for assigning taxonomy. ** TO-DO- Add that file for ppl to use? **
+Clustering results from the database that was used for assigning taxonomy.
 
 rdp_gold database for chimera detection - http://drive5.com/uchime/gold.fa
 
