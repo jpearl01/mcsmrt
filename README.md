@@ -82,7 +82,7 @@ We used our custom made database file which uses a tool called Lineanator for th
   * SPLIT_OTU_METHOD (-h) - Do you want to split reads into separate OTUs before or after EE filtering? Works only if -o is yes. Answer in before or after. 
 
 
-### Output files explained:
+### Output files explained:  
 ![alt text](https://github.com/jpearl01/mcsmrt/blob/master/file_names.png "File names and description")
 
 ### Tutorial:
@@ -115,16 +115,16 @@ This section is a walk through for how to use MCSMRT using sample data from BEI 
 
 ### Examples of files obtained as results:
 After successful completion of the command which runs the mcsmrt_v1.rb script, many output files are generated. Here is how some of the important files should look like:
-1) Blast results - post_OTU_blast.txt
+1) Blast results - post_OTU_blast.txt  
 ![alt text](https://github.com/jpearl01/mcsmrt/blob/master/blast_results.png "Blast results")
 
-2) OTU table - post_OTU_table.txt
+2) OTU table - post_OTU_table.txt  
 ![alt text](https://github.com/jpearl01/mcsmrt/blob/master/otu_table_results.png "OTU table results")
 
-3) UTAX results - post_reads.utax
+3) UTAX results - post_reads.utax  
 ![alt text](https://github.com/jpearl01/mcsmrt/blob/master/utax_results.png "UTAX results")
 
-4) All reads info - pre_all_reads_info.txt
+4) All reads info - pre_all_reads_info.txt  
 ![alt text](https://github.com/jpearl01/mcsmrt/blob/master/all_reads_results.png "All reads results")
 
 
