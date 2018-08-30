@@ -85,6 +85,39 @@ We used our custom made database file which uses a tool called Lineanator for th
 ### Output files explained:  
 ![alt text](https://github.com/jpearl01/mcsmrt/blob/master/file_names.png "File names and description")
 
+### Elaborate description for important files:
+1) OTU table - File name: post_OTU_table.txt 
+  * Column 1 - OTU ID - The are the names/id's of the centroid OTU's that were obtained during clustering. 
+  * Column 2 to last column - Counts for number of reads in each sample. The number of columns depends on the number of samples which were processed. 
+
+2) UTAX results file - File name: post_reads.utax
+  * Column 1 - OTU ID with number of reads which mapped to that OTU during clustering.
+  * Column 2 - Taxonomic assignments from domain to species level along with confidence for each level. 
+  * Column 3 - Taxonomic assignment till maxinum confidence.
+  * Column 4 - Strand at which the reference aligned with the read. 
+
+3) Final results file - File name: post_final results - This is just a merge of OTU table, UTAX results and blast results. 
+
+4) All reads info file - File name: pre_all_reads_info.txt
+  * Column 1 - Read name
+  * Column 2 - Basename, i.e., name of the sample to which that read belonged to
+  * Column 3 - Number of CCS passes
+  * Column 4 - Barcode used for this sample while pooling together for sequencing
+  * Column 5 - Name of the sample to which that read belonged to, without barcode
+  * Column 6 - Expected error before trimming primers
+  * Column 7 - Expected error after trimming primers
+  * Column 8 - Length of the read before trimming primers
+  * Column 9 - Length of the read after trimming
+  * Column 10 - Boolean for whether the read mapped to host genome or not
+  * Column 11 - Boolean for whether the read had a forward primer
+  * Column 12 - Boolean for whether the read had a reverse primer
+  * Column 13 and 14 - Start and end coordinates for forward primer
+  * Column 15 and 16 - Start and end coordinates for reverse primer
+  * Column 17 - Orientation of the read originally. Note that after finding primers, reads are oriented to be uniform, i.e., 3` -> 5` direction. 
+  * Column 18 - Note on the quality of primers that were matched
+  * Column 19 - Number of primers which were present in that read
+
+
 ### Tutorial:
 This section is a walk through for how to use MCSMRT using sample data from BEI sequencing on PacBio. Before this, CCS and demultiplexing was run on the samples using the Reads of Insert (ROI) protocol from SMRT link. A filtering criteria of minimum number of passes = 5 and predicted accuracy = 90 was used. Successful completion of the ROI protocol creates a results directory in a location/path which is based on how PacBio was configured. A directory similar to the one produced by ROI is in the tutorial folder in mcsmrt's GitHub page. You can then run each of these steps to learn how to use MCSMRT.  
 
@@ -115,16 +148,16 @@ This section is a walk through for how to use MCSMRT using sample data from BEI 
 
 ### Examples of files obtained as results:
 After successful completion of the command which runs the mcsmrt_v1.rb script, many output files are generated. Here is how some of the important files should look like:
-1) Blast results - post_OTU_blast.txt  
+1) Blast results - File name: post_OTU_blast.txt  
 ![alt text](https://github.com/jpearl01/mcsmrt/blob/master/blast_results.png "Blast results")
 
-2) OTU table - post_OTU_table.txt  
+2) OTU table - File name: post_OTU_table.txt  
 ![alt text](https://github.com/jpearl01/mcsmrt/blob/master/otu_table_results.png "OTU table results")
 
-3) UTAX results - post_reads.utax  
+3) UTAX results - File name: post_reads.utax  
 ![alt text](https://github.com/jpearl01/mcsmrt/blob/master/utax_results.png "UTAX results")
 
-4) All reads info - pre_all_reads_info.txt  
+4) All reads info - File name: pre_all_reads_info.txt  
 ![alt text](https://github.com/jpearl01/mcsmrt/blob/master/all_reads_results.png "All reads results")
 
 
