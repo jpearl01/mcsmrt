@@ -146,7 +146,7 @@ This section is a walk through for how to use MCSMRT using sample data from BEI 
    $ ruby ~/mcsmrt/mcsmrt_v1.rb -a -f reads/ -d num_of_threads_available -e 1 -s 5 -x 2000 -n 500 -c ~/mcsmrt/tutorial/rdp_gold.fa -t ~/mcsmrt/tutorial/16sMicrobial_ncbi_lineage_reference_database.udb -l ~/mcsmrt/tutorial/16sMicrobial_ncbi_lineage.fasta -g /path/to/human/genome/fasta -p ~/mcsmrt/tutorial/primers.fasta -b ~/mcsmrt/ncbi_clustered_table.tsv -v  
    With the -d option, provide the number of threads. With the -g option, provide the path to the complete human genome in FASTA format. The other input files required to run this script are provided in the tutorial folder.  
 
-### Examples of files obtained as results:
+### Example output files:
 After successful completion of the command which runs the mcsmrt_v1.rb script, many output files are generated. The most imporatant/useful output files are pre_all_reads_info.txt and post_final_results.txt. As an example, results run through MCSMRT using data from BEI mock community is added in the folder called example_output_files. 
 
 
