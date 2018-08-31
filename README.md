@@ -113,7 +113,7 @@ We used our custom made database file which uses a tool called Lineanator for th
   * Column 12 - Boolean for whether the read had a reverse primer
   * Column 13 and 14 - Start and end coordinates for forward primer
   * Column 15 and 16 - Start and end coordinates for reverse primer
-  * Column 17 - Orientation of the read originally. Note that after finding primers, reads are oriented to be uniform, i.e., 3` -> 5` direction. 
+  * Column 17 - Orientation of the read originally. Note that after finding primers, reads are oriented to be uniform, i.e., 3\` -> 5\` direction. 
   * Column 18 - Note on the quality of primers that were matched
   * Column 19 - Number of primers which were present in that read
   * Column 20-33 - Taxonomic assignment for each level along with confidences. This is obtained by running utax on all the reads. 
