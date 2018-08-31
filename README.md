@@ -147,18 +147,7 @@ This section is a walk through for how to use MCSMRT using sample data from BEI 
    With the -d option, provide the number of threads. With the -g option, provide the path to the complete human genome in FASTA format. The other input files required to run this script are provided in the tutorial folder.  
 
 ### Examples of files obtained as results:
-After successful completion of the command which runs the mcsmrt_v1.rb script, many output files are generated. Here is how some of the important files should look like:
-1) Blast results - File name: post_OTU_blast.txt  
-![alt text](https://github.com/jpearl01/mcsmrt/blob/master/blast_results.png "Blast results")
-
-2) OTU table - File name: post_OTU_table.txt  
-![alt text](https://github.com/jpearl01/mcsmrt/blob/master/otu_table_results.png "OTU table results")
-
-3) UTAX results - File name: post_reads.utax  
-![alt text](https://github.com/jpearl01/mcsmrt/blob/master/utax_results.png "UTAX results")
-
-4) All reads info - File name: pre_all_reads_info.txt  
-![alt text](https://github.com/jpearl01/mcsmrt/blob/master/all_reads_results.png "All reads results")
+After successful completion of the command which runs the mcsmrt_v1.rb script, many output files are generated. The most imporatant/useful output files are pre_all_reads_info.txt and post_final_results.txt. As an example, results run through MCSMRT using data from BEI mock community is added in the folder called example_output_files. 
 
 
 ### Built with:  
