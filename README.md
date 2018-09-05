@@ -5,7 +5,11 @@
 MCSMRT is a tool for microbiome analysis of PacBio data. This tool acts as a pipeline to go from raw PacBio data to clustered sequences (OTUs or Operational Taxonomic Units). The outputs include a table eith the number of reads assigned to each OTU and taxonomic lineage associated with each OTU. Another output file which consists of general information regarding each read, for example, CCS count, expected error, length, primer matching result, etc., is created for convinience with downstream data analysis. 
 
 ### Installation and Dependencies: 
-1. Ruby v2.2.1 or greater 
+1. Because there are large files in this repository for the tutorial, users first need to install git-lfs
+   Follow the directions here:
+   https://git-lfs.github.com/
+
+2. Ruby v2.2.1 or greater 
    For Fedora:
    `$ sudo dnf install ruby`
 
@@ -17,16 +21,16 @@ MCSMRT is a tool for microbiome analysis of PacBio data. This tool acts as a pip
 
    To install dependencies run the command   
    `$ bundle`
-2. BWA https://sourceforge.net/projects/bio-bwa/files/ 
+3. BWA https://sourceforge.net/projects/bio-bwa/files/ 
    Follow the directions to compile the bwa exectuable, then add it to your path. The easiest way:
    `$ ln -s /path/to/bwa ~/bin/`
 
-3. Sambamba http://lomereiter.github.io/sambamba/
+4. Sambamba http://lomereiter.github.io/sambamba/
    Download precompiled binary, unzip and add to your path, for example:
    `$ tar xvf sambamba* && mv sambamba ~/bin/`
 
 
-4. Usearch v8.1 from http://www.drive5.com/usearch/download.html. Download the 32bit version after agreeing to the license. After downloading make sure to make the file exectuable:
+5. Usearch v8.1 from http://www.drive5.com/usearch/download.html. Download the 32bit version after agreeing to the license. After downloading make sure to make the file exectuable:
 `$ chmod +x usearch8.1.*`
 
 Add this softlink to your path making sure the executable name is 'usearch'. For example:
