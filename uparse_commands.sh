@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # For dereplication, -sizeout is the number of reads that are collapsed into one read, minseqlength option can be used to specify the minimum sequence length to be included in the output. 
 usearch -derep_fulllength $1.fq -fastaout post_dereplicated.fa -sizeout 
 

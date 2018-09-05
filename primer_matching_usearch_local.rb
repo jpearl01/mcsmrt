@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 require 'trollop'
 require 'bio'
 

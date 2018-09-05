@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 all_bc_info = File.open("pre_all_reads_info.txt")
 all_bc_utax = File.open("all_bc_reads.utax")
 outfile = File.open("pre_all_bc_reads_info_with_taxa.txt", "w")

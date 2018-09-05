@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 require 'bio'
 
 sample = ARGV[0]
