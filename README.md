@@ -32,7 +32,7 @@ MCSMRT is a tool for microbiome analysis of PacBio FL16S sequence data. This pip
    ```
 
 3. Install [BWA](https://sourceforge.net/projects/bio-bwa/files/)
-   Follow the directions to compile the bwa exectuable, then add it to your path. The easiest way:
+   Follow the directions to compile the bwa exectuable, then add it to your path. An easy way:
    ```
    $ ln -s /path/to/bwa ~/bin/
    ```
@@ -49,10 +49,14 @@ MCSMRT is a tool for microbiome analysis of PacBio FL16S sequence data. This pip
 $ chmod +x usearch8.1.*
 ```
 
-Add a softlink to your path (making sure the executable name is 'usearch'). For example:
+Add a softlink to your path (making sure the executable is named 'usearch'). For example:
    ```
    $ln -s /home/user/apps/usearch8.1.*_i86linux* ~/bin/usearch
    ```
+6. Install h5py (a prerequisite for ccs_passes.py):
+```
+$ sudo dnf install h5py.blah
+```
 
 ### Data Prerequisites:
 [Fasta file](https://en.wikipedia.org/wiki/FASTA_format) of forward and reverse primer sequences used in your specific PCR protocol.
@@ -83,7 +87,7 @@ There are 2 methods/routes you can use to run your PacBio data through this micr
     Command:  
   ```
     ruby mcsmrt_v1.rb [-h]  
-	[-a] / [-i LIST_OF_FILES_FOR_CLUSTEIRNG] [-f FOLDER_NAME] [-m TRIMMING]  
+	[-a] / [-i LIST_OF_FILES_FOR_CLUSTERING] [-f FOLDER_NAME] [-m TRIMMING]  
 	[-e EXPECTED_ERROR] [-s CCS_COUNT] [-x MAXIMUM_LENGTH] [-n MINIMUM_LENGTH]  
 	[-c UCHIME_DB] [-t UTAX_DB] [-l BLAST_DB] [-g HOST_GENOME_DB] [-p PRIMERS_DB]
 	[-d THREADS] [-b NCBI_CLUSTERED_FILE] [-v VERBOSE]                                                                                        
@@ -105,9 +109,12 @@ There are 2 methods/routes you can use to run your PacBio data through this micr
   * OUTPUT_FOLDER_NAME (-o) – Name of the folder in which the FASTQ files (with ccs and sample information in the header) are going to be stored. The name of each FASTQ file in this folder is going to be the same as the sample name given in the SAMPLE_INFO_FILE.   
 
 #### Arguments for mcsmrt.rb:
-  * `ALL (-a) / LIST_OF_FILES_FOR_CLUSTEIRNG (-i)` – If you want to specify particular files for clustering, you should create another file with a list of all the FASTQs you want to concatenate for clustering. This file must have one file name in each row.  If you want all the files in the directory to be clustered together, use the –a option. 
-  * `FOLDER_NAME (-f)` – Name of the folder (preferably the full path), in which the files for microbiome analysis and/or clustering exist. So, the files you provided for this script with the -a/-i option should all be stored in the directory given with this argument. 
-  * `EXPECTED_ERROR (-e)`, Default (1.0) – Maximum expected error above which sequences are filtered out (refer  http://www.drive5.com/usearch/manual/expected_errors.html for more information on expected error).
+Option | Description
+ --------- | ----------- 
+  ALL (-a) | Use all Fastq files in this directory
+   LIST_OF_FILES_FOR_CLUSTEIRNG (-i) | To specify particular files for clustering, create a file with a list of fastq file locations, on file/location per row.
+  FOLDER_NAME (-f) | Project folder name (preferably the full path). The input files must be stored as a sub folder here. 
+  EXPECTED_ERROR (-e) | (Default 1.0) Maximum [expected error](http://www.drive5.com/usearch/manual/expected_errors.html). Sequences greater than this are filtered out. 
   * `CCS_COUNT (-s)`, Default (5) – Minimum CCS count below which sequences are filtered out. 
   * `MAXIMUM_LENGTH (-x)`, Default (2000) – Maximum length above which sequences are filtered out. 
   * `MINIMUM_LENGTH (-n)`, Default (500) – Minimum length below which sequences are filtered out. 
@@ -179,14 +186,22 @@ This section is a walk through for how to use MCSMRT using sample data from BEI 
    https://drive.google.com/open?id=1UJZBU3PhEVq8lUGcjPcs2s2LbqjsQctA
    and place all files in the mcmsrt_tutorial folder.
 4) Expand the archive BEI_sample_datatar.gz which will create a folder with the data files from the PacBio's ROI protocol. These data are from a single cell of a PacBio sequencing run, and contain 4 barcoded replicates of the BEI mock community. Uncompress via:  
-   `$ tar -xzf BEI_sample_data.tar.gz -C data`
+   ```
+   $ tar -xzf BEI_sample_data.tar.gz
+   ```
    Successful completion should create a folder called data in your current working directory. This folder is structured exactly as any ROI protocol output file.  
-5) Change the data_path column to the FULL PATH where your data folder is located, i.e., the folder that was created after uncompressing the tar.gz file. Do not use relative paths here. Again, this is the folder which looks like an ROI results folder.  
+5) In the sample_key.txt file, you must change the data_path column to the FULL PATH to the newly created data folder. Do not use relative paths here. Again, this is the folder which looks like an ROI results folder.  
 6) Run the get_fastqs.rb script to obtain FASTQ files with modified headers.  
-   `$ ruby ~/mcsmrt/get_fastqs.rb -s sample_key.txt -o reads`
+   
+   ```
+   $ ruby ~/mcsmrt/get_fastqs.rb -s sample_key.txt -o reads
+   ```
+
    On successful completion, a folder called reads should be created along with the FASTQ files.  
 7) The last step is to run the mcsmrt.rb script which does most of the heavy lifting and produces an OTU table with taxonomies for each OTU. The command that should be run for this purpose is as follows  
-   `$ ruby ~/mcsmrt/mcsmrt_v1.rb -a -f reads/ -d num_of_threads_available -e 1 -s 5 -x 2000 -n 500 -c ~/mcsmrt/tutorial/rdp_gold.fa -t ~/mcsmrt/tutorial/16sMicrobial_ncbi_lineage_reference_database.udb -l ~/mcsmrt/tutorial/16sMicrobial_ncbi_lineage.fasta -g /path/to/human/genome/fasta -p ~/mcsmrt/tutorial/primers.fasta -b ~/mcsmrt/ncbi_clustered_table.tsv -v`
+   ```
+   $ ruby ~/mcsmrt/mcsmrt_v1.rb -a -f reads/ -d num_of_threads_available -e 1 -s 5 -x 2000 -n 500 -c ~/mcsmrt/tutorial/rdp_gold.fa -t ~/mcsmrt/tutorial/16sMicrobial_ncbi_lineage_reference_database.udb -l ~/mcsmrt/tutorial/16sMicrobial_ncbi_lineage.fasta -g /path/to/human/genome/fasta -p ~/mcsmrt/tutorial/primers.fasta -b ~/mcsmrt/ncbi_clustered_table.tsv -v
+   ```
    With the `-d` option, provide the number of threads. With the `-g` option, provide the path to the complete human genome in FASTA format. The other input files required to run this script are provided in the tutorial folder.
 
 ### Example output files:
