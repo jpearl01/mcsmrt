@@ -1,39 +1,58 @@
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) [](#lang-us) ![ruby in bioinformatics ftw](https://img.shields.io/badge/Language-ruby-steelblue.svg)
+
+
 # MC-SMRT
 ## Microbiome Classifier for SMRT PacBio data
 
 ### Introduction:
-MCSMRT is a tool for microbiome analysis of PacBio data. This tool acts as a pipeline to go from raw PacBio data to clustered sequences (OTUs or Operational Taxonomic Units). The outputs include a table eith the number of reads assigned to each OTU and taxonomic lineage associated with each OTU. Another output file which consists of general information regarding each read, for example, CCS count, expected error, length, primer matching result, etc., is created for convinience with downstream data analysis. 
+MCSMRT is a tool for microbiome analysis of PacBio FL16S sequence data. This pipeline is intended to help a user go from raw PacBio data to taxonomically classified OTU (Operational Taxonomic Units) sequence clusters. The outputs of greatest interest to users are likely a table of read counts assigned to each OTU and its corresponding taxonomic lineage, and a file consisting of specific information regarding each read, (e.g., CCS count, expected error, length, primer matching result, etc.). 
 
 ### Installation and Dependencies: 
-1. Sample Data, and database for classification can be [downloaded here](https://drive.google.com/open?id=1UJZBU3PhEVq8lUGcjPcs2s2LbqjsQctA)
+1. Sample Data, and classification database can be [downloaded here](https://drive.google.com/open?id=1UJZBU3PhEVq8lUGcjPcs2s2LbqjsQctA)
 
-2. Ruby v2.2.1 or greater 
+2. Install Ruby v2.2.1 or greater 
    For Fedora:
-   `$ sudo dnf install ruby`
+   ```
+   $ sudo dnf install ruby
+   ```
 
    For Centos/RHEL
-   `$ sudo yum install ruby`
+   ```
+   $ sudo yum install ruby
+   ```
 
    Install the 'bundler' gem:
-   `$ gem install bundler`
+   ```
+   $ gem install bundler
+   ```
 
    To install dependencies run the command   
-   `$ bundle`
+   ```
+   $ bundle
+   ```
 
-3. [BWA](https://sourceforge.net/projects/bio-bwa/files/)
+3. Install [BWA](https://sourceforge.net/projects/bio-bwa/files/)
    Follow the directions to compile the bwa exectuable, then add it to your path. The easiest way:
-   `$ ln -s /path/to/bwa ~/bin/`
+   ```
+   $ ln -s /path/to/bwa ~/bin/
+   ```
 
-4. [Sambamba](http://lomereiter.github.io/sambamba/)
+4. Install [Sambamba](http://lomereiter.github.io/sambamba/)
    Download precompiled binary, unzip and add to your path, for example:
-   `$ tar xvf sambamba* && mv sambamba ~/bin/`
+   ```
+   $ tar xvf sambamba* && mv sambamba ~/bin/
+   ```
 
 
-5. [Usearch v8.1](http://www.drive5.com/usearch/download.html). Download the 32bit version after agreeing to the license. After downloading make sure to make the file exectuable:
-`$ chmod +x usearch8.1.*`
+5. Install [Usearch v8.1](http://www.drive5.com/usearch/download.html). Download the 32bit version after agreeing to the license. After downloading make sure to make the file exectuable:
+```
+$ chmod +x usearch8.1.*
+```
 
 Add a softlink to your path (making sure the executable name is 'usearch'). For example:
-   `$ln -s usearch8.1.*_i86linux* ~/bin/usearch`
+   ```
+   $ln -s /home/user/apps/usearch8.1.*_i86linux* ~/bin/usearch
+   ```
 
 ### Data Prerequisites:
 [Fasta file](https://en.wikipedia.org/wiki/FASTA_format) of forward and reverse primer sequences used in your specific PCR protocol.
@@ -46,7 +65,7 @@ Clustering results from the database that was used for assigning taxonomy.
 
 [RDP gold database](http://drive5.com/uchime/gold.fa) for chimera detection 
 
-Host genome file, for filtering sequences mapping to host genome.  This may, or may not make sense depending on the provenance of your samples. As this tool was created using primarily clinical samples, filtering out either human DNA was often an important step.
+Host genome file, for filtering sequences mapping to host genome.  This may or may not make sense for you depending on the provenance of your samples. As this tool was created using primarily clinical samples, filtering out human DNA was often an important quality control step.
 
 ### Usage: 
 First you will need a FASTA file with the PCR primer sequences used for your 16s amplification. Create or acquire the file with all the primer sequences used and store it in your working directory.
