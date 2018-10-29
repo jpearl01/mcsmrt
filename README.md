@@ -178,7 +178,7 @@ This section is a walk through for how to use MCSMRT using sample data from BEI 
 3) Download the tutorial data from:
    https://drive.google.com/open?id=1UJZBU3PhEVq8lUGcjPcs2s2LbqjsQctA
    and place all files in the mcmsrt_tutorial folder. Use the unzip command if you downloaded all the files at once. Make sure the files from the tutorial are not embedded in a folder, they should be present as individual files in the mcsmrt_tutorial directory. 
-4) Expand the archive BEI_sample_datatar.gz. It will create a folder with the data files from the PacBio's ROI protocol. This data is from a single cell of a PacBio sequencing run, and contain 4 barcoded replicates of the BEI mock community. Uncompress using:  
+4) Expand the archive BEI_sample_data.tar.gz. It will create a folder with the data files from the PacBio's ROI protocol. This data is from a single cell of a PacBio sequencing run, and contain 4 barcoded replicates of the BEI mock community. Uncompress using:  
    `$ tar -xzf BEI_sample_data.tar.gz`
    Successful completion should create a folder called data in your current working directory. This folder is structured exactly as any ROI protocol output file.  
 5) In the sample_key.txt file, change the data_path column to the FULL PATH where your data folder is located, i.e., the folder that was created after uncompressing the tar.gz file. Do not use relative paths here. Again, this is the folder which looks like an ROI results folder.  
