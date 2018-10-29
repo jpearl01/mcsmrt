@@ -82,7 +82,7 @@ def get_tarred_folder (samps)
 		abort("The file #{curr_file} does not exist!") if !File.exists?(curr_file)
 		`tar xvf #{curr_file} -C raw_data/`
 	else
-		curr_file = samps[0] + "barcoded-fastqs.tgz"
+		curr_file = "#{samps[0]}/" + "barcoded-fastqs.tgz"
 		abort("The file #{curr_file} does not exist!") if !File.exists?(curr_file)
 		`tar xvf #{curr_file} -C raw_data/`
 	end
@@ -99,7 +99,7 @@ def get_ccs_counts (samps, script_directory)
   		curr_files_ccs = samps[0] + "*.ccs.h5"
   		`python #{script_directory}/ccs_passes.py #{curr_files_ccs} >> passes`
   	else
-		curr_files_ccs = samps[0] + "*.ccs.h5"
+		curr_files_ccs = "#{samps[0]}/" + "*.ccs.h5"
 		`python #{script_directory}/ccs_passes.py #{curr_files_ccs} >> passes`
   	end
 	
