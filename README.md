@@ -87,7 +87,7 @@ There are 2 methods/routes you can use to run your PacBio data through this micr
 	[-e EXPECTED_ERROR] [-s CCS_COUNT] [-x MAXIMUM_LENGTH] [-n MINIMUM_LENGTH]  
 	[-c UCHIME_DB] [-t UTAX_DB] [-l BLAST_DB] [-g HOST_GENOME_DB] [-p PRIMERS_DB]
 	[-d THREADS] [-b NCBI_CLUSTERED_FILE] [-v VERBOSE]                                                                                        
-```
+  ```
 
 #### Method 2: For cases when you have to demultiplex your samples and then run it through the microbiome classifier
   * Step 1: Demultiplex using [this demultiplexing pipeline](https://github.com/rehrlich/ccs_smrt_pipe). This pipeline also results in FASTQ files which have a format that is compatible with mcsmrt.rb script for microbiome analysis. 
