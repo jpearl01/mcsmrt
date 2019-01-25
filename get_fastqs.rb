@@ -36,8 +36,46 @@ def write_to_fastq (fh, header, sequence, quality)
   	fh.write(quality + "\n")
 end
 
+def prompt_to_change_sample_names (sample_file)
+	prompt_hash = {}
+	sample_ind = ""
+	special = "?!<>',?[]}{=-)(*&^%$#`~{}"
+	regex = /[#{special.gsub(/./){|char| "\\#{char}"}}]/
+
+	sample_file.each_with_index do |entry, ind|
+		if ind == 0
+			header_split = entry.chomp.split("\t")
+			sample_ind = header_split.index("sample_name")
+		else
+			entry_split = entry.chomp.split("\t")
+			sample = entry_split[sample_ind]
+			if entry_split[sample_ind][0] =~ /^[0-9].*/ or entry_split[sample_ind] =~ regex
+				prompt_hash[sample] = "yes"
+			else
+				prompt_hash[sample] = "no"
+			end
+		end
+	end
+
+	if prompt_hash.has_value?("yes")
+		puts "Sample names need to be changed. Should I go ahead and change it myself? Answer in yes or no."
+		answer = gets.chomp
+		if answer == "yes"
+			puts "Slightly modifying sample names and moving ahead...."
+		elsif answer == "no"
+    		abort("Correct the sample names manually and re-run this script. Use samples names without special characters, underscores are allowed. Sample names should always begin with an alphabet.")
+    	else
+    		abort("You did not answer in yes or no. Aborting the code now. Run the script again.")
+   		end
+   	end
+
+   	sample_file.close()
+	return prompt_hash
+
+end
+
 ##### Checking the number of projects based on the pacbio job id
-def num_of_projects (sample_file)
+def num_of_projects (sample_file, prompt_hash)
   	pb_projects = {} # A hash which points to one array for each job_id. Structure is pb_projects[pb_jobid] = [path_to_files, [sample1, sample2]]. Each sample is an object of the Barcode_16s_record class!
 
   	fow_barcode_ind = 0
@@ -60,12 +98,37 @@ def num_of_projects (sample_file)
 		else
 			entry_split = entry.chomp.split("\t")
 			pb_projects[entry_split[pb_jobid_ind]] = ["", []] unless pb_projects.has_key?(entry_split[pb_jobid_ind])
-    		rec = Barcode_16s_record.new
-    		rec.fow_barcode = entry_split[fow_barcode_ind]
-    		rec.rev_barcode = entry_split[rev_barcode_ind]
-    		rec.sample = entry_split[sample_ind]
+
+			special = "?!<>',?[]}{=-)(*&^%$#`~{}"
+			regex = /[#{special.gsub(/./){|char| "\\#{char}"}}]/
+
+			# Calling the method which checks sample names
+			if prompt_hash[entry_split[sample_ind]] == "yes"
+				sample_name_mod = ""
+				if entry_split[sample_ind][0] =~ /^[0-9].*/
+					sample_name_mod = "Samp_#{entry_split[sample_ind]}"
+					#puts sample_name_mod
+					if sample_name_mod =~ regex
+						sample_name_mod = sample_name_mod.gsub(/[^\w]/, '_')
+						#puts sample_name_mod
+					end
+				end
+
+				# Populating the rec class and pb_projects hash
+    			rec = Barcode_16s_record.new
+    			rec.fow_barcode = entry_split[fow_barcode_ind]
+    			rec.rev_barcode = entry_split[rev_barcode_ind]
+    			rec.sample = sample_name_mod
+    		else
+    			rec = Barcode_16s_record.new
+    			rec.fow_barcode = entry_split[fow_barcode_ind]
+    			rec.rev_barcode = entry_split[rev_barcode_ind]
+    			rec.sample = entry_split[sample_ind]
+			end
+
     		pb_projects[entry_split[pb_jobid_ind]][0] = entry_split[data_path_ind]
     		pb_projects[entry_split[pb_jobid_ind]][1].push(rec)
+
 		end
 	end
 
@@ -78,11 +141,11 @@ end
 def get_tarred_folder (samps)
 	#puts samps.inspect
 	if samps[0].end_with?("/")
-		curr_file = samps[0] + "barcoded-fastqs.tgz"
+		curr_file = samps[0] + "data/barcoded-fastqs.tgz"
 		abort("The file #{curr_file} does not exist!") if !File.exists?(curr_file)
 		`tar xvf #{curr_file} -C raw_data/`
 	else
-		curr_file = samps[0] + "barcoded-fastqs.tgz"
+		curr_file = "#{samps[0]}/" + "data/barcoded-fastqs.tgz"
 		abort("The file #{curr_file} does not exist!") if !File.exists?(curr_file)
 		`tar xvf #{curr_file} -C raw_data/`
 	end
@@ -96,10 +159,10 @@ def get_ccs_counts (samps, script_directory)
 	end
 
 	if samps[0].end_with?("/")                                                                                                      
-  		curr_files_ccs = samps[0] + "*.ccs.h5"
+  		curr_files_ccs = samps[0] + "data/*.ccs.h5"
   		`python #{script_directory}/ccs_passes.py #{curr_files_ccs} >> passes`
   	else
-		curr_files_ccs = samps[0] + "*.ccs.h5"
+		curr_files_ccs = "#{samps[0]}/" + "data/*.ccs.h5"
 		`python #{script_directory}/ccs_passes.py #{curr_files_ccs} >> passes`
   	end
 	
@@ -179,8 +242,13 @@ else
 	Dir.mkdir("#{output_folder}")
 end
 
+# Calling the method which checks sample names and makes sure the user is ok with modying them within the program
+prompt_hash = prompt_to_change_sample_names(sample_file)
+
+# re-opening the sample file since it was read and closed in the promt method
+sample_file = File.open(sample_file, 'r')
 # Calling the method which counts the number of projects in the sample file
-pb_projects = num_of_projects(sample_file)
+pb_projects = num_of_projects(sample_file, prompt_hash)
 puts pb_projects.inspect
 
 # Calling the methods which help in producing files with all the reads in the output folder provided.
