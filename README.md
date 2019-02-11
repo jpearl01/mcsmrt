@@ -24,18 +24,18 @@ MCSMRT is a tool to cluster PacBio FL16S amplicon microbiome sequences into Oper
    $ sudo yum install ruby
    ```
 
-2. 	[Bundler Gem](https://bundler.io/): 
+2.  [Bundler Gem](https://bundler.io/): 
     ```
     $ gem install bundler
     ```
 
-3. 	Other Gems: 
+3.  Other Gems: 
     ```
     $ bundle
     ```
 
 4. [BWA](https://sourceforge.net/projects/bio-bwa/files/) (install via site instructions).
-	Add to path. e.g.:
+  Add to path. e.g.:
     ```
     $ ln -s /path/to/bwa ~/bin/
     ```
@@ -102,7 +102,7 @@ Column | Description
 --- | ---
 PB_jobid | Job ID assigned during demultiplexing (via SMRT portal).    
 data_path | Path to SMRT portal demultiplexed data.  
-forward_barcode | Forward primer name, (must match header in PRIMERS_DB file).  
+forward_barcode | Forward primer name, (must match header in PRIMERS_DB file). 
 reverse_barcode | Reverse primer name, (must match header in PRIMERS_DB file).
 sample_name | Sample/barcode label (added to fastq header as “barcodelabel”). Each unique forward/reverse barcode pair is given a different number that is added to the beginning of the “barcodelabel”. **Please Note**: Do not use characters that will break filenames, e.g. spaces, reserved system characters etc. 
 
@@ -131,19 +131,19 @@ PB_jobid | data_path | forward_barcode | reverse_barcode | sample_name
   
   ```
     mcsmrt.rb [-h]  
-	[-a] / [-i LIST_OF_FILES_FOR_CLUSTERING] 
+  [-a] / [-i LIST_OF_FILES_FOR_CLUSTERING] 
     [-f FOLDER_NAME] 
     [-m TRIMMING]  
-	[-e EXPECTED_ERROR] 
+  [-e EXPECTED_ERROR] 
     [-s CCS_COUNT] 
     [-x MAXIMUM_LENGTH] 
     [-n MINIMUM_LENGTH]  
-	[-c UCHIME_DB] 
+  [-c UCHIME_DB] 
     [-t UTAX_DB] 
     [-l BLAST_DB] 
     [-g HOST_GENOME] 
     [-p PRIMERS]
-	[-d THREADS] 
+  [-d THREADS] 
     [-b NCBI_CLUSTERED_FILE] 
     [-v VERBOSE]                                                                                        
   ``` 
@@ -174,27 +174,27 @@ $ mcsmrt.rb -d 32 -i paths_to_fastq.tsv \
 
 #### mcsmrt.rb Parameter Details:
 Option | Description
- --------- | ----------- 
- **Mandatory** | 
-  `ALL (-a)` | Folder with all fastq files to use in clustering (assumes filename matches sample name)
-   `LIST_OF_FILES_FOR_CLUSTERING (-i)` | Specify sequence files with a file of fastq file paths, one file/location per row, tab separated
-  `FOLDER_NAME (-f)` | Project folder path. The input fastqs must be in a sub folder here. 
-    `HOST_GENOME_DB (-g)` | Fasta formatted host reference genome file, indexed with BWA. Used to filter off-target host mapping reads.
-  `PRIMERS_DB (-p)` | Fasta format primer file for primer matching and trimming.
-  `UCHIME_DB (-c)` | Database file with trusted high quality 16s sequences (fasta format). Default is rdp_gold database. Used to filter chimeric OTU sequences. 
-  `UTAX_DB (-t)` | UDB format database file with lineage assigned to each 16S sequence. Custom database file was created with [Lineanator](https://github.com/bhatarchanas/lineanator) using the NCBI 16S BLAST and taxonomy databases. To learn more, [see this reference](http://www.drive5.com/usearch/manual/cmd_makeudb_utax.html). 
-  `BLAST_DB (-l)` | The fasta file used to create the `UTAX_DB` file. File used to obtain strain name, alignment length, and percent identity for each OTU sequence. 
-  `NCBI_CLUSTERED_FILE (-b)` | Table of database OTUs (dbOTU)
+--------- | ----------- 
+**Mandatory** | 
+`ALL (-a)` | Folder with all fastq files to use in clustering (assumes filename matches sample name)
+`LIST_OF_FILES_FOR_CLUSTERING (-i)` | Specify sequence files with a file of fastq file paths, one file/location per row, tab separated
+`FOLDER_NAME (-f)` | Project folder path. The input fastqs must be in a sub folder here.
+`HOST_GENOME_DB (-g)` | Fasta formatted host reference genome file, indexed with BWA. Used to filter off-target host-mapping reads.
+`PRIMERS_DB (-p)` | Fasta format primer file for primer matching and trimming.
+`UCHIME_DB (-c)` | Database file with trusted high quality 16s sequences (fasta format). Default is rdp_gold database. Used to filter chimeric OTU sequences.
+`UTAX_DB (-t)` | UDB format database file with lineage assigned to each 16S sequence. Custom database file was created with [Lineanator](https://github.com/bhatarchanas/lineanator) using the NCBI 16S BLAST and taxonomy databases. To learn more, [see this reference](http://www.drive5.com/usearch/manual/cmd_makeudb_utax.html).
+`BLAST_DB (-l)` | The fasta file used to create the `UTAX_DB` file. Used to obtain strain name, alignment length, and percent identity for each OTU sequence.
+`NCBI_CLUSTERED_FILE (-b)` | Table of database OTUs (dbOTU)
 **Optional** |
-  `EXPECTED_ERROR (-e)` | (Default 1.0) Maximum [expected error](http://www.drive5.com/usearch/manual/expected_errors.html) (EE). Reads with higher EE are removed from further analysis. 
-  `CCS_COUNT (-s)` | Default (5) – Minimum CCS count below which sequences are filtered out. 
-  `MAXIMUM_LENGTH (-x)` | Default (2000) – Maximum length above which sequences are filtered out. 
-  `MINIMUM_LENGTH (-n)` | Default (500) – Minimum length below which sequences are filtered out. 
-  `TRIMMING (-m)` | Default (yes) – `yes` to trim primer sequences, and `no` otherwise. 
-  `THREADS (-d)` | Number of threads to use. Default is 1. 
-  `VERBOSE (-v)` | Keep all intermediate files 
-  `SPLIT_OTU (-o)` | Default (no) - `yes` to split reads mapping to each OTU into separate multi-FASTA files. `no` - don't
-  `SPLIT_OTU_METHOD (-h)` | When `SPLIT_OTU` is `yes`, further define splitting OTU mapping reads before or after EE filtering. `before` or `after`. 
+`EXPECTED_ERROR (-e)` | (Default 1.0) Maximum [expected error](http://www.drive5.com/usearch/manual/expected_errors.html) (EE). Reads with higher EE are removed from further analysis.
+`CCS_COUNT (-s)` | Default (5) – Minimum CCS count below which sequences are filtered out.
+`MAXIMUM_LENGTH (-x)` | Default (2000) – Maximum length above which sequences are filtered out.
+`MINIMUM_LENGTH (-n)` | Default (500) – Minimum length below which sequences are filtered out.
+`TRIMMING (-m)` | Default (yes) – `yes` to trim primer sequences, and `no` otherwise.
+`THREADS (-d)` | Number of threads to use. Default is 1.
+`VERBOSE (-v)` | Keep all intermediate files
+`SPLIT_OTU (-o)` | Default (no) - `yes` to split reads mapping to each OTU into separate multi-FASTA files. `no` - don't
+`SPLIT_OTU_METHOD (-h)` | When `SPLIT_OTU` is `yes`, further define splitting OTU mapping reads before or after EE filtering. `before` or `after`. 
 
 
 For a detailed description of the output files, please see [here](detailed_file_outputs.md)
