@@ -84,22 +84,25 @@ Clustered Tax DB | [TSV](https://en.wikipedia.org/wiki/Tab-separated_values) | T
 ## Getting Started With Your Own Data
 ### Method 1: SMRTportal/SMRTlink demultiplexed CCS fastq files (one file per sample):
 ---
-  * Run get_fastqs.rb. This script requires fastq files from a Reads of Insert (ROI) protocol demultiplexed using SMRT portal/SMRT link, and the original output folders/data. This will insert CCS counts and the barcode name into the fastq headers. Modified fastq files are deposited in a user defined output folder. You will need a 'sample_info' file describing each samples name, and its corresponding output folder ([format described below](#sample_info-file-format)).
+  * Run get_fastqs.rb. This script requires fastq files from a Reads of Insert (ROI) protocol demultiplexed using SMRT portal/SMRT link, and the original output folders/data. This will insert CCS counts and the barcode name into the fastq headers. Modified fastq files are deposited in a user defined output folder. You will need a 'sample_info' file describing each samples name, and its corresponding output folder (format described below).
 
 Command:    
-```
-  get_fastqs.rb 
-  [-h] Help
-  [-o OUTPUT_FOLDER_NAME] Folder for fastq file output. Fastq filenames become the sample_name from SAMPLE_INFO_FILE. 
-  [-s SAMPLE_INFO_FILE] Tab separated file of all fastq files by sample.
-```
+
+get_fastqs.rb Parameters:
+
+Option | Description
+--------- | ----------- 
+`-h` | Help
+`-o OUTPUT_FOLDER_NAME` | Folder for fastq file output. Fastq filenames become the sample_name from SAMPLE_INFO_FILE. 
+`-s SAMPLE_INFO_FILE` | Tab separated file of all fastq files by sample.
+
  Example:
 
 `$ ruby get_fastqs.rb -s samp_info.tsv -o mcsmrt_reads`
 
 SAMPLE_INFO file format (TSV) Column detail:
 
-Column | Description
+Column_ID | Description
 --- | --- 
 PB_jobid | Job ID assigned during demultiplexing (via SMRT portal).
 data_path | Path to SMRT portal demultiplexed data.
@@ -128,26 +131,7 @@ PB_jobid | data_path | forward_barcode | reverse_barcode | sample_name
     
    Either provide a directory with all fastq files for clustering, or provide a file with a list of file paths.
 
-   Command parameters:
-  
-  ```
-    mcsmrt.rb [-h]  
-  [-a] / [-i LIST_OF_FILES_FOR_CLUSTERING] 
-    [-f FOLDER_NAME] 
-    [-m TRIMMING]  
-  [-e EXPECTED_ERROR] 
-    [-s CCS_COUNT] 
-    [-x MAXIMUM_LENGTH] 
-    [-n MINIMUM_LENGTH]  
-  [-c UCHIME_DB] 
-    [-t UTAX_DB] 
-    [-l BLAST_DB] 
-    [-g HOST_GENOME] 
-    [-p PRIMERS]
-  [-d THREADS] 
-    [-b NCBI_CLUSTERED_FILE] 
-    [-v VERBOSE]
-  ``` 
+
    Example (directory method):
 
 
@@ -195,7 +179,7 @@ Option | Description
 `THREADS (-d)` | Number of threads to use. Default is 1.
 `VERBOSE (-v)` | Keep all intermediate files
 `SPLIT_OTU (-o)` | Default (no) - `yes` to split reads mapping to each OTU into separate multi-FASTA files. `no` - don't
-`SPLIT_OTU_METHOD (-h)` | When `SPLIT_OTU` is `yes`, further define splitting OTU mapping reads before or after EE filtering. `before` or `after`. 
+`SPLIT_OTU_METHOD (-j)` | When `SPLIT_OTU` is `yes`, further define splitting OTU mapping reads before or after EE filtering. `before` or `after`. 
 
 
 For a detailed description of the output files, please see [here](detailed_file_outputs.md)
