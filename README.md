@@ -94,12 +94,13 @@ Command:
   [-s SAMPLE_INFO_FILE] Tab separated file of all fastq files by sample.
 ```
  Example:
- 
-   `$ ruby get_fastqs.rb -s samp_info.tsv -o mcsmrt_reads`
 
-SAMPLE_INFO file format (TSV) Column detail:  
+`$ ruby get_fastqs.rb -s samp_info.tsv -o mcsmrt_reads`
+
+SAMPLE_INFO file format (TSV) Column detail:
+
 Column | Description
---- | ---
+--- | --- 
 PB_jobid | Job ID assigned during demultiplexing (via SMRT portal).
 data_path | Path to SMRT portal demultiplexed data.
 forward_barcode | Forward primer name, (must match header in PRIMERS_DB file).
@@ -107,7 +108,7 @@ reverse_barcode | Reverse primer name, (must match header in PRIMERS_DB file).
 sample_name | Sample/barcode label (added to fastq header as “barcodelabel”). Each unique forward/reverse barcode pair is given a different number that is added to the beginning of the “barcodelabel”. **Please Note**: Do not use characters that will break filenames, e.g. spaces, reserved system characters etc. 
 
 Example formatted file:
-      
+
 PB_jobid | data_path | forward_barcode | reverse_barcode | sample_name
 --- | --- | --- | --- | --- 
 17094 | /data/pacbio/smrtanalysis_userdata/jobs/017/017094/ | 0001_Forw_bc | 0002_Rev_bc | A_22_gotaq
