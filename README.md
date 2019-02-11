@@ -100,9 +100,9 @@ Command:
 SAMPLE_INFO file format (TSV) Column detail:  
 Column | Description
 --- | ---
-PB_jobid | Job ID assigned during demultiplexing (via SMRT portal).    
-data_path | Path to SMRT portal demultiplexed data.  
-forward_barcode | Forward primer name, (must match header in PRIMERS_DB file). 
+PB_jobid | Job ID assigned during demultiplexing (via SMRT portal).
+data_path | Path to SMRT portal demultiplexed data.
+forward_barcode | Forward primer name, (must match header in PRIMERS_DB file).
 reverse_barcode | Reverse primer name, (must match header in PRIMERS_DB file).
 sample_name | Sample/barcode label (added to fastq header as “barcodelabel”). Each unique forward/reverse barcode pair is given a different number that is added to the beginning of the “barcodelabel”. **Please Note**: Do not use characters that will break filenames, e.g. spaces, reserved system characters etc. 
 
@@ -145,7 +145,7 @@ PB_jobid | data_path | forward_barcode | reverse_barcode | sample_name
     [-p PRIMERS]
   [-d THREADS] 
     [-b NCBI_CLUSTERED_FILE] 
-    [-v VERBOSE]                                                                                        
+    [-v VERBOSE]
   ``` 
    Example (directory method):
 
