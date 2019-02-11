@@ -1,5 +1,5 @@
 ### Output files:  
-![alt text](https://github.com/jpearl01/mcsmrt/blob/master/file_names.png "File names and description")
+![alt text](images/file_names.png "File names and description")
 
 ### Elaborate description for important files:
 1) OTU table - File name: post_OTU_table.txt 

@@ -19,7 +19,6 @@ This section is a walk through for how to use MCSMRT using sample data from BEI 
    ```
    Successful completion should create a folder called data in your current working directory. This folder is structured exactly as any [SMRT portal/SMRT link](https://www.pacb.com/products-and-services/analytical-software/smrt-analysis/) ROI protocol output.  
 5) In the sample_key.txt file, you must change the data_path column to the FULL PATH to the newly created data folder. Do not use relative paths here. Again, this is the folder which looks like an ROI results folder.  
-=======
    and place all files in the mcmsrt_tutorial folder. Use the unzip command if you downloaded all the files at once. Make sure the files from the tutorial are not embedded in a folder, they should be present as individual files in the mcsmrt_tutorial directory. 
 4) Expand the archive BEI_sample_data.tar.gz. It will create a folder with the data files from the PacBio's ROI protocol. This data is from a single cell of a PacBio sequencing run, and contain 4 barcoded replicates of the BEI mock community. Uncompress using:  
    `$ tar -xzf BEI_sample_data.tar.gz`
@@ -38,7 +37,7 @@ This section is a walk through for how to use MCSMRT using sample data from BEI 
    ```
    $ ruby ~/mcsmrt/mcsmrt_v1.rb -a -f reads/ -d num_of_threads_available -e 1 -s 5 -x 2000 -n 500 -c ~/mcsmrt/tutorial/rdp_gold.fa -t ~/mcsmrt/tutorial/16sMicrobial_ncbi_lineage_reference_database.udb -l ~/mcsmrt/tutorial/16sMicrobial_ncbi_lineage.fasta -g /path/to/human/genome/fasta -p ~/mcsmrt/tutorial/primers.fasta -b ~/mcsmrt/ncbi_clustered_table.tsv -v
    ```
-=======
+   
    `$ ruby ~/mcsmrt/mcsmrt.rb -a -f reads/ -d num_of_threads_available -e 1 -s 5 -x 2000 -n 500 -c ~/mcsmrt/tutorial/rdp_gold.fa -t ~/mcsmrt/tutorial/16sMicrobial_ncbi_lineage_reference_database.udb -l ~/mcsmrt/tutorial/16sMicrobial_ncbi_lineage.fasta -g /path/to/human/genome/fasta -p ~/mcsmrt/tutorial/primers.fasta -b ~/mcsmrt/ncbi_clustered_table.tsv -v`
 
    With the `-d` option, provide the number of threads. With the `-g` option, provide the path to the complete human genome in FASTA format. The other input files required to run this script are provided in the tutorial folder.
