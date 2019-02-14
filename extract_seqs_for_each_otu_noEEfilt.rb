@@ -1,11 +1,11 @@
 #!/usr/bin/env ruby
 require 'bio'
-require 'trollop'
+require 'optimist'
 
 ##### Get the path to the directory in which the scripts exist 
 script_directory = File.dirname(__FILE__)
 
-opts = Trollop::options do
+opts = Optimist::options do
   opt :otufile, "Fasta file with all the OTUs", :type => :string, :short => "-u"
   opt :uglobfile, "File from usearch global run with all reads without EE filter", :type => :string, :short => "-p"
   opt :fqfile, "Fastq file with all the sequences", :type => :string, :short => "-a"

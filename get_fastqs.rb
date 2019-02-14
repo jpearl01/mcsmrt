@@ -1,13 +1,13 @@
 #!/usr/bin/env ruby
 
 require 'bio'
-require 'trollop'
+require 'optimist'
 require 'fileutils'
 
 #USAGE: ruby ../mcsmrt/get_fastqs.rb -s #{sample_key_file} -o #{all_bc_reads_output_folder} 
 
 ##### Input 
-opts = Trollop::options do
+opts = Optimist::options do
 	opt :samplefile, "File with all the sample information", :type => :string, :short => "-s"
 	opt :outfolder, "Output FASTQ file which has all the reads in it.", :type => :string, :short => "-o"
 end 

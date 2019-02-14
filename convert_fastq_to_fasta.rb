@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 require 'bio'
-require 'trollop'
+require 'optimist'
 
-opts = Trollop::options do
+opts = Optimist::options do
   opt :fastqfile, "fastq file with all the oriented sequences", :type => :string, :short => "-q"
   opt :fastafile, "Output fasta file", :type => :string, :short => "-a"
 end

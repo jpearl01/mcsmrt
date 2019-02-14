@@ -1,11 +1,11 @@
 #!/usr/bin/env ruby
-require 'trollop'
+require 'optimist'
 require 'bio'
 
 #ruby ../mcsmrt_mod/primer_matching.rb -p all_bc_reads_forward_missing_primer_map.txt -o test_primer_matching.txt -a all_bc_reads.fq
 
 
-opts = Trollop::options do
+opts = Optimist::options do
 	opt :primerfile, "USEARCH results file after running the search_oligodb command", :type => :string, :short => "-p"
   opt :allreadsfile, "File with all the reads", :type => :string, :short => "a"
 	opt :outfile, "Output file which will have all the information from primer matching", :type => :string, :short => "-o"

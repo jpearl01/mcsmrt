@@ -1,9 +1,9 @@
 #!/usr/bin/env ruby
 
 require 'bio'
-require 'trollop'
+require 'optimist'
 
-opts = Trollop::options do
+opts = Optimist::options do
   opt :primerfile, "USEARCH results file after running the search_oligodb command", :type => :string, :short => "-p"
   opt :outfile, "Output file which will have all the information from primer matching", :type => :string, :short => "-o"
 end

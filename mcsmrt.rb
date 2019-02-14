@@ -1,12 +1,12 @@
 #!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
 require 'bio'
-require 'trollop'
+require 'optimist'
 
 # USAGE: ruby /data/shared/homes/archana/projects/mcsmrt/mcsmrt.rb -a -f reads/ -d 32 -e 1 -s 5 -x 2000 -n 500 -c /data/shared/homes/archana/projects/rdp_gold.fa -t /data/shared/homes/archana/projects/lineanator/16sMicrobial_ncbi_lineage_reference_database.udb -l /data/shared/homes/archana/projects/lineanator/16sMicrobial_ncbi_lineage.fasta -g /data/shared/homes/archana/projects/human_g1k_v37.fasta -p /data/shared/homes/archana/projects/primers.fasta -b /data/shared/homes/archana/projects//mcsmrt/ncbi_clustered_table.tsv -v
 
 
-opts = Trollop::options do
+opts = Optimist::options do
   opt :foldername, "Folder with the demultiplexed files for clustering", :type => :string, :short => "-f"
   opt :samplelist, "File with a subset of fastq files to be used (tab separated sample_name/filepath)", :type => :string, :short => "-i"
   opt :threads, "Number of threads you can allot for running this process", :type => :int, :short => "-d", :default => 1

@@ -1,6 +1,6 @@
-require 'trollop'
+require 'optimist'
 
-opts = Trollop::options do
+opts = Optimist::options do
   opt :blastfile, "File with blast information.", :type => :string, :short => "-b"
   opt :otuutaxfile, "File with OTU table and utax information.", :type => :string, :short => "-u"
   opt :ncbiclusteredfile, "File with info about DB clustered", :type => :string, :short => "-n"

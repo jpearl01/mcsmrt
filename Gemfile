@@ -1,4 +1,4 @@
 source 'https://rubygems.org'
-gem 'trollop'
+gem 'optimist'
 gem 'bio'
 gem 'fileutils'

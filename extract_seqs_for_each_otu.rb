@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 require 'bio'
-require 'trollop'
+require 'optimist'
 
-opts = Trollop::options do
+opts = Optimist::options do
   opt :otufile, "Fasta file with all the OTUs", :type => :string, :short => "-u"
   opt :upfile, "File from uparse", :type => :string, :short => "-p"
   opt :fafile, "Fasta file with all the dereplicated sequences", :type => :string, :short => "-a"
