@@ -14,55 +14,54 @@ MCSMRT is a tool to cluster PacBio FL16S amplicon microbiome sequences into Oper
 
 1. [Ruby](https://www.ruby-lang.org/en/) v2.2.1 or greater 
    
-   Fedora:
-   ```
-   $ sudo dnf install ruby
-   ```
+The simplest way is to download and install the [Ruby Version Manager (rvm)](https://rvm.io/) then:
 
-   Centos/RHEL
-   ```
-   $ sudo yum install ruby
+   ```bash
+   $ rvm install 2.2.1
+   $ rvm use 2.2.1
    ```
 
 2.  [Bundler Gem](https://bundler.io/): 
-    ```
+    ```bash
     $ gem install bundler
     ```
 
-3.  Other Gems: 
-    ```
+3.  All Required Ruby Gems: 
+    ```bash
     $ bundle
     ```
 
 4. [BWA](https://sourceforge.net/projects/bio-bwa/files/) (install via site instructions).
   Add to path. e.g.:
-    ```
+    ```bash
     $ ln -s /path/to/bwa ~/bin/
     ```
 
 5. [Sambamba](http://lomereiter.github.io/sambamba/)
    Precompiled binary. Add to path, e.g.:
-   ```
+   ```bash
    $ tar xvf sambamba* && ln -s /path/to/sambamba ~/bin/
    ```
 
 
 6. [Usearch v8.1](http://www.drive5.com/usearch/download.html) free 32bit version (64 bit preferred, but not free). Make executable:
-   ```
+   ```bash
    $ chmod +x usearch8.1.*
    ```
    Add to path (executable *must* be called 'usearch'). e.g.:
-   ```
-   $ln -s /home/user/apps/usearch8.1.1861_i86linux32 ~/bin/usearch
+   ```bash
+   $ ln -s /home/user/apps/usearch8.1.1861_i86linux32 ~/bin/usearch
    ```
 
 8. [h5py](https://www.h5py.org/) (for ccs_passes.py):
-   ```
+   ```bash
    $ sudo dnf install h5py
    ```
 
 ### Installation:
-`$ git clone git@github.com:jpearl01/mcsmrt.git`
+```bash
+  $ git clone git@github.com:jpearl01/mcsmrt.git
+```
 
 ### Data Prerequisites:
 Data | File type | Description
