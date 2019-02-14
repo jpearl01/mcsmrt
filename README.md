@@ -161,9 +161,8 @@ $ mcsmrt.rb -d 32 -i paths_to_fastq.tsv \
 Option | Description
 --------- | ----------- 
 **Mandatory** | 
-`allFiles (-a)` | Folder with all fastq files to use in clustering (assumes filename matches sample name)
-`samplelist (-i)` | Specify the fastq files to use in a file of paths, one sample and path per row, tab separated
 `fastqFolder (-f)` | Folder path of all fastq files.
+`samplelist (-i)` | File with a subset of tab separated sample/file_paths (one per row)
 `hostDB (-g)` | Fasta formatted host reference genome file, indexed with BWA. Used to filter off-target host-mapping reads.
 `primerfile (-p)` | Fasta format of all primer sequences. Needed for primer matching/trimming.
 `uchimedb (-c)` | Fasta formatted database file with trusted 16s sequences.  Used to filter chimeric OTU sequences.

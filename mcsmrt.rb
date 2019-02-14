@@ -7,9 +7,8 @@ require 'trollop'
 
 
 opts = Trollop::options do
-  opt :allFiles, "Use all files in the given directory name for clustering", :short => "-a"
   opt :foldername, "Folder with the demultiplexed files for clustering", :type => :string, :short => "-f"
-  opt :samplelist, "File with a list of file names which are to be merged and clustered together", :type => :string, :short => "-i"
+  opt :samplelist, "File with a subset of fastq files to be used (tab separated sample_name/filepath)", :type => :string, :short => "-i"
   opt :threads, "Number of threads you can allot for running this process", :type => :int, :short => "-d", :default => 1
   opt :eevalue, "Expected error value greater than which reads will be filtered out", :type => :float, :short => "-e", :default => 1.0
   opt :trimming, "Do you want to trim your sequences? Answer in yes or no", :type => :string, :short => "-m", :default => "yes"
@@ -28,21 +27,15 @@ opts = Trollop::options do
 end 
 
 ##### Assigning variables to the input and making sure we got all the inputs
-if opts[:allFiles] == true     
-  all_files = "*"  
-else
-  all_files = nil   
-end  
-
 if opts[:samplelist] != nil  
   sample_list = opts[:samplelist]
+  all_files = nil
 else
+  all_files = "*"
   sample_list = nil
 end              
 
-if opts[:allFiles] == false and opts[:samplelist] == nil
-  abort("Must specify if you want to use all files in the folder with '-a' or give a file with a list of file names for clustering with '-i'")
-end
+
 
 if opts[:verbose] == true     
   verbose = true   
