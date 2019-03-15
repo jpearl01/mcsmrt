@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 require 'bio'
 require 'optimist'
+require 'colorize'
 
 # USAGE: ruby /data/shared/homes/archana/projects/mcsmrt/mcsmrt.rb -a -f reads/ -d 32 -e 1 -s 5 -x 2000 -n 500 -c /data/shared/homes/archana/projects/rdp_gold.fa -t /data/shared/homes/archana/projects/lineanator/16sMicrobial_ncbi_lineage_reference_database.udb -l /data/shared/homes/archana/projects/lineanator/16sMicrobial_ncbi_lineage.fasta -g /data/shared/homes/archana/projects/human_g1k_v37.fasta -p /data/shared/homes/archana/projects/primers.fasta -b /data/shared/homes/archana/projects//mcsmrt/ncbi_clustered_table.tsv -v
 
@@ -15,18 +16,18 @@ opts = Optimist::options do
   opt :ccsvalue, "CCS passes lesser than which reads will be filtered out", :type => :int, :short => "-s", :default => 5
   opt :lengthmax, "Maximum length above which reads will be filtered out", :type => :int, :short => "-x", :default => 2000
   opt :lengthmin, "Manimum length below which reads will be filtered out", :type => :int, :short => "-n", :default => 500
-  opt :uchimedbfile, "Path to database file for the uchime command", :type => :string, :short => "-c"
-  opt :utaxdbfile, "Path to database file for the utax command", :type => :string, :short => "-t"
-  opt :lineagefastafile, "Path to FASTA file with lineage info for the ublast command", :type => :string, :short => "-l"
-  opt :host_db, "Path to fasta file of host genome", :type => :string, :short => "-g"
-  opt :primerfile, "Path to fasta file with the primer sequences", :type => :string, :short => "-p"
+  opt :uchimedbfile, "Path to database file for the uchime command", :type => :string, :short => "-c", required: true
+  opt :utaxdbfile, "Path to database file for the utax command", :type => :string, :short => "-t", required: true
+  opt :lineagefastafile, "Path to FASTA file with lineage info for the ublast command", :type => :string, :short => "-l", required: true
+  opt :host_db, "Path to fasta file of host genome", :type => :string, :short => "-g", default: nil
+  opt :primerfile, "Path to fasta file with the primer sequences", :type => :string, :short => "-p", required: true
   opt :ncbiclusteredfile, "Path to a file with database clustering information", :type => :string, :short => "-b"
   opt :verbose, "Use -v if you want all the intermediate files, else the 6 important results file will be kept and the rest will be deleted", :short => "-v"
   opt :splitotu, "Do you want to split OTUs into individual fasta files? Answer in yes or no", :type => :string, :short => "-o", :default => "no"
   opt :splitotumethod, "If you chose yes to split OTUs, do it before or after EE filtering? Answer in before or after", :type => :string, :short => "-j", :default => "after"
 end 
 
-##### Assigning variables to the input and making sure we got all the inputs
+##### Assigning variables to the input and make sure we got all the inputs
 if opts[:samplelist] != nil  
   sample_list = opts[:samplelist]
   all_files = nil
@@ -36,20 +37,20 @@ else
 end              
 
 
-
 if opts[:verbose] == true     
   verbose = true   
 else
   verbose = nil   
 end  
 
-opts[:foldername].nil?        ==false  ? folder_name = opts[:foldername]              : abort("Must supply the name of the folder in which the demultiplexed files exist with '-f'")
-opts[:uchimedbfile].nil?      ==false  ? uchime_db_file = opts[:uchimedbfile]         : abort("Must supply a 'uchime database file' e.g. rdpgold.udb with '-c'")
-opts[:utaxdbfile].nil?        ==false  ? utax_db_file = opts[:utaxdbfile]             : abort("Must supply a 'utax database file' e.g. 16s_ncbi.udb with '-t'")
-opts[:lineagefastafile].nil?  ==false  ? lineage_fasta_file = opts[:lineagefastafile] : abort("Must supply a 'lineage fasta file' e.g. ncbi_lineage.fasta (for blast) with '-l'")
-opts[:host_db].nil?           ==false  ? human_db = opts[:host_db]                    : abort("Must supply a fasta of the host genome e.g. human_g1k.fasta with '-g'")
-opts[:primerfile].nil?        ==false  ? primer_file = opts[:primerfile]              : abort("Must supply a fasta of the primer sequences e.g primer_seqs.fa with '-p'")
-opts[:ncbiclusteredfile].nil? ==false  ? ncbi_clust_file = opts[:ncbiclusteredfile]   : abort("Must supply a file with database clustering information with '-b'")
+File.exists?(opts[:foldername])          ? folder_name = opts[:foldername]              : abort("Must supply the name of the folder with demultiplexed fastq files'-f'")
+File.exists?(opts[:uchimedbfile])        ? uchime_db_file = opts[:uchimedbfile]         : abort("Must supply an existing 'uchime database file' e.g. rdpgold.udb with '-c'")
+File.exists?(opts[:utaxdbfile])          ? utax_db_file = opts[:utaxdbfile]             : abort("Must supply an existing 'utax database file' e.g. 16s_ncbi.udb with '-t'")
+File.exists?(opts[:lineagefastafile])    ? lineage_fasta_file = opts[:lineagefastafile] : abort("Must supply an existing 'lineage fasta file' e.g. ncbi_lineage.fasta (for blast) with '-l'")
+File.exists?(opts[:primerfile])          ? primer_file = opts[:primerfile]              : abort("Must supply an existing fasta of the primer sequences e.g primer_seqs.fa with '-p'")
+File.exists?(opts[:ncbiclusteredfile])   ? ncbi_clust_file = opts[:ncbiclusteredfile]   : abort("Must supply an existing file with database clustering information with '-b'")
+!opts[:host_db].nil? && File.exists?(opts[:host_db])  ? human_db = opts[:host_db]      : abort("Cannot find host genome file e.g. human_g1k.fasta with '-g'")
+
 
 thread = opts[:threads].to_i
 ee = opts[:eevalue].to_f 
@@ -296,7 +297,7 @@ def orient (f_primer_matches, r_primer_matches, read_orientation, seq, qual)
 end
 
 ##### Work with the file which has all the reads
-def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req, human_db, primer_file, thread, report_hash)
+def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req, human_db = nil, primer_file, thread, report_hash)
   # Get the basename of the fastq file
   file_basename = File.basename(all_bc_reads_file, ".*")
 
@@ -308,78 +309,79 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
   trimmed_out_file = File.open("pre_trimmed_and_oriented.fq", "w")
 
   # Get the seqs which map to the host genome by calling the map_to_host_genome method
- 	mapped_count, mapped_string = map_to_human_genome(file_basename, human_db, thread) 
-  #puts mapped_string.inspect 
+  if !human_db.nil?
+    puts "Mapping reads to reference genome...".green.bold
+    mapped_count, mapped_string = map_to_human_genome(file_basename, human_db, thread) 
+    puts "Done.".green.bold
+  end
 
   # Primer matching by calling the primer_match method
   count_no_primer_match = 0
+  puts "Aligning primers...".green.bold
   primer_record_hash = primer_match(script_directory, file_basename, primer_file, thread)
-  #puts primer_record_hash.inspect
-  #puts primer_record_hash["m150212_113119_42168_c100747522550000001823168507081543_s1_p0/32770/ccs"]
-  
+  puts "Done.".green.bold
+
   # Prereqs for the next loop
- 	#Create the hash which is going to store all infor for each read using the Read_sequence class
+  #Create the hash which is going to store all info for each read using the Read_sequence class
   all_reads_hash = {}
+
   # Create a sequence hash which has all the sequence and quality strings for each record
   seqs_hash = {}
+
   # Create a hash with all the reads which are singletons
   singletons_hash = {}
+
   # Create a hash which has the trimmed seqs
-	trimmed_hash = {}
+  trimmed_hash = {}
+
   # Opening the file with all original reads for writing with bio module
   all_bc_reads = Bio::FlatFile.auto(all_bc_reads_file)
-
-  # Loop through the fq file, record some basic infor in the all_reads_hash
+  
+  puts "Parsing fastq headers and adding info to all_read table...".green.bold
+  # Split out all attributes from the fastq header, check for required values 'ccs' and 'barcodelabel'
   all_bc_reads.each do |entry|
     def_split = entry.definition.split(";")
+    all_rec_attr = {}
     read_name = def_split[0]
-    #puts def_split
-
-    # Fill the all_bc_hash with some basic info that we can get (read_name, barcode, ccs, length_pretrim)
-    if def_split[1].include?("barcodelabel")
-      basename = def_split[1].split("=")[1]
-      #puts basename
-      barcode = basename.split("_")[0]
-      sample = basename.split("_")[1..-1].join("_")
-      ccs = def_split[2].split("=")[1].to_i
-    elsif def_split[1].include?("ccs")
-      basename = def_split[2].split("=")[1]
-      barcode = basename.split("_")[0]
-      sample = basename.split("_")[1..-1].join("_")
-      ccs = def_split[1].split("=")[1].to_i
-    else
-      abort("Header does not have barcode label and ccs counts! Headers should have the format @read_name;barcodelabel=sample_name;ccs=ccs_passes. Use get_fastqs.rb for this purpose.")
+    def_split.each do |rec|
+      if $. == 1
+        all_rec_attr[:read_name] = rec 
+      else
+        var = rec.split("=")
+        all_rec_attr[var[0]] = var[1]
+      end
     end
 
-    all_reads_hash[read_name] = Read_sequence.new
-    all_reads_hash[read_name].read_name = read_name
-    all_reads_hash[read_name].basename = basename
-    all_reads_hash[read_name].ccs = ccs
-    all_reads_hash[read_name].barcode = barcode
-    all_reads_hash[read_name].sample = sample
+    abort("Header does not have barcode label and ccs counts! Headers should have the format @read_name;barcodelabel=sample_name;ccs=ccs_passes. Can use get_fastqs.rb for this purpose.") unless all_rec_attr.has_key?("barcodelabel") && all_rec_attr.has_key?("ccs")    
+
+    all_reads_hash[read_name]                = Read_sequence.new
+    all_reads_hash[read_name].read_name      = all_rec_attr[:read_name]
+    all_reads_hash[read_name].basename       = all_rec_attr["barcodelabel"]
+    all_reads_hash[read_name].ccs            = all_rec_attr["ccs"].to_i
+    all_reads_hash[read_name].barcode        = all_rec_attr["barcodelabel"]
+    all_reads_hash[read_name].sample         = all_rec_attr["barcodelabel"]
     all_reads_hash[read_name].length_pretrim = entry.naseq.size
 
     #populating the report hash
-    if report_hash.has_key?(basename)
-      report_hash[basename].total += 1
+    if report_hash.has_key?(all_reads_hash[read_name].barcode)
+      report_hash[all_reads_hash[read_name].barcode].total += 1
     else 
-      report_hash[basename] = Report.new
-      report_hash[basename].total = 1
+      report_hash[all_reads_hash[read_name].barcode] = Report.new
+      report_hash[all_reads_hash[read_name].barcode].total = 1
     end
 
-  	# Populate the seqs hash
+    # Populate the seqs hash
     seqs_hash[read_name] = [entry.naseq.upcase, entry.quality_string, entry.definition]
   
     # Store the host genome mapping info
-    if mapped_string.include?(read_name)
+    if mapped_string.nil?
+      all_reads_hash[read_name].host_map = "NA"
+    elsif mapped_string.include?(read_name)
       all_reads_hash[read_name].host_map = true
     end 
     
     # Store the primer matching info
     if primer_record_hash.key?(read_name)
-      #puts primer_record_hash[read_name].inspect
-      #puts primer_record_hash[read_name][0], primer_record_hash[read_name][1], primer_record_hash[read_name][6], primer_record_hash[read_name][3].to_i, primer_record_hash[read_name][4].to_i, primer_record_hash[read_name][2].to_i, primer_record_hash[read_name][5].to_i
-      #puts all_reads_hash[read_name].length_pretrim.inspect
       if primer_record_hash[read_name][0] == true and primer_record_hash[read_name][1] == true and primer_record_hash[read_name][6] == "+" and primer_record_hash[read_name][3].to_i <= 100 and primer_record_hash[read_name][4].to_i >= all_reads_hash[read_name].length_pretrim-100
         all_reads_hash[read_name].f_primer_matches = primer_record_hash[read_name][0]
         all_reads_hash[read_name].r_primer_matches = primer_record_hash[read_name][1]
@@ -419,19 +421,20 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
       all_reads_hash[read_name].primer_note = "no_primer_hits"
     end
   end
-  
-  #puts all_reads_hash
+
+  puts "Done.".green.bold
   
   # Get ee_pretrim
+  puts "Calculating EE for all fastq sequences...".green.bold
   ee_pretrim_hash = get_ee_from_fq_file(file_basename, ee, "pre_ee_pretrim.fq")
-  #puts ee_pretrim_hash
+  puts "Done.".green.bold
+
   ee_pretrim_hash.each do |k, v|
-   	#puts all_reads_hash[read_name]
     all_reads_hash[k].ee_pretrim = v
- 	end
+  end
 
   # Loop thorugh the all_reads_hash and fill the rest of the info into it
-	all_reads_hash.each do |k, v|
+  all_reads_hash.each do |k, v|
     if trim_req == "yes"
     	# Trim and orient sequences with the trim_and_orient method
     	seq_trimmed_length, seq_trimmed, qual_trimmed, ee = trim_and_orient(all_reads_hash[k].f_primer_matches, all_reads_hash[k].r_primer_matches, all_reads_hash[k].f_primer_start, all_reads_hash[k].f_primer_end, all_reads_hash[k].r_primer_start, all_reads_hash[k].r_primer_end, all_reads_hash[k].read_orientation, seqs_hash[k][0], seqs_hash[k][1])
@@ -507,7 +510,9 @@ end
 ##################### MAIN PROGRAM #######################
 
 # Calling the method which comcatenates files
+puts "Concatenating fastq files..".green.bold
 concat_files(folder_name, all_files, sample_list)
+puts "Done.".green.bold
 
 # Getting the name of the file which has all the reads
 all_bc_reads_file = "pre_demultiplexed_ccsfilt.fq"
@@ -516,12 +521,16 @@ all_bc_reads_file = "pre_demultiplexed_ccsfilt.fq"
 report_hash = {}
 
 # Create a file which will have the report for number of sequences in each step
+puts "Initializing report file...".green.bold
 report_file = File.open("post_each_step_report.txt", "w") 
 # writing into the report file
 report_file.puts("sample\tdemultiplexed_ccs\tprimer_filt\thost_filt\tsize_filt\tee_filt\tderep_filt\tchimera_filt")
+puts "Done.".green.bold
 
 # Calling the method which then calls all the other methods! 
+"Starting main method...".magenta.bold
 all_reads_hash, trimmed_hash, report_hash = process_all_bc_reads_file(script_directory, all_bc_reads_file, ee, trim_req, human_db, primer_file, thread, report_hash)
+"Finished main method.".magenta.bold
 
 final_fastq_file = File.open("pre_sequences_for_clustering.fq", "w")
 final_fastq_basename = File.basename(final_fastq_file, ".fq")
