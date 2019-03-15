@@ -87,7 +87,7 @@ class Read_sequence
     @ee_posttrim       = -1 
     @length_pretrim    = -1
     @length_posttrim   = -1
-    @host_map          = nil 
+    @host_map          = "NA"
     @f_primer_matches  = false
     @r_primer_matches  = false
     @f_primer_start    = "NA"
@@ -251,11 +251,9 @@ def trim_and_orient (f_primer_matches, r_primer_matches, f_primer_start, f_prime
   # For cases when both primers matched
   if f_primer_matches == true and r_primer_matches == true
     if read_orientation == "+"
-      #puts "#{f_primer_end}..#{r_primer_start}" 
       seq_trimmed = seq[f_primer_end..r_primer_start]
       qual_trimmed = qual[f_primer_end..r_primer_start]
     elsif read_orientation == "-"
-      #puts "#{r_primer_end}..#{f_primer_start}"
       seq = Bio::Sequence::NA.new(seq)
       revcom_seq = seq.complement.upcase
       rev_qual = qual.reverse
@@ -269,9 +267,7 @@ def trim_and_orient (f_primer_matches, r_primer_matches, f_primer_start, f_prime
     seq_trimmed_bio = Bio::Fastq.new("@name\n#{seq_trimmed}\n+\n#{qual_trimmed}")
     quality_scores_array = seq_trimmed_bio.quality_scores
     quality_scores_array.each do |each_qual|
-      prob_wrong = -each_qual.to_f/10
-      prob_wrong_2 = 10**prob_wrong
-      ee += prob_wrong_2
+      ee += 10**(-each_qual.to_f/10)
     end
     ee_2 = ee.round(2)
   end
@@ -447,7 +443,6 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
     if trim_req == "yes"
     	# Trim and orient sequences with the trim_and_orient method
     	seq_trimmed_length, seq_trimmed, qual_trimmed, ee = trim_and_orient(all_reads_hash[k].f_primer_matches, all_reads_hash[k].r_primer_matches, all_reads_hash[k].f_primer_start, all_reads_hash[k].f_primer_end, all_reads_hash[k].r_primer_start, all_reads_hash[k].r_primer_end, all_reads_hash[k].read_orientation, seqs_hash[k][0], seqs_hash[k][1])
-    	#puts "#{seq_trimmed_length},#{seq_trimmed},#{qual_trimmed}" 
     	if seq_trimmed == ""
       	# Add the length_postrim info to the all_reads_hash
       	all_reads_hash[k].length_posttrim = -1
@@ -537,9 +532,9 @@ report_file.puts("sample\tdemultiplexed_ccs\tprimer_filt\thost_filt\tsize_filt\t
 puts "Done.".green.bold
 
 # Calling the method which then calls all the other methods! 
-"Starting main method...".magenta.bold
+puts "Starting main method...".magenta.bold
 all_reads_hash, trimmed_hash, report_hash = process_all_bc_reads_file(script_directory, all_bc_reads_file, ee, trim_req, human_db, primer_file, thread, report_hash)
-"Finished main method.".magenta.bold
+puts "Finished main method.".magenta.bold
 
 final_fastq_file = File.open("pre_sequences_for_clustering.fq", "w")
 final_fastq_basename = File.basename(final_fastq_file, ".fq")
@@ -548,6 +543,7 @@ file_for_usearch_global = File.open("pre_sequences_for_usearch_global.fq", "w")
 file_for_usearch_global_basename = File.basename(file_for_usearch_global)
 
 # loop through the hash which has the trimmed sequences
+puts "Writing trimmed fastq values to file...".green.bold
 trimmed_hash.each do |key, value|
   #puts key, value
   key_in_all_reads_hash = key.split(";")[0]
@@ -578,24 +574,33 @@ trimmed_hash.each do |key, value|
   end
 
 end
+puts "Done.".green.bold
 
 final_fastq_file.close
 file_for_usearch_global.close
 
 # Running the usearch commands for clustering
+puts "Clustering...".magenta.bold
 `sh #{script_directory}/uparse_commands.sh #{final_fastq_basename} #{uchime_db_file} #{utax_db_file} #{file_for_usearch_global_basename}`
+puts "Done".magenta.bold
 
 # Running the command to give a report of counts
+puts "Generating Reports...".green.bold
 `ruby #{script_directory}/get_report.rb #{final_fastq_basename}`
-  
-# Running blast on the OTUs                                                                                                                            
+puts "Done.".green.bold
+
+# Running blast on the OTUs
+puts "Blasting OTU centroids...".magenta.bold                                                                                  
 `usearch -ublast post_OTU.fa -db #{lineage_fasta_file} -top_hit_only -id 0.9 -blast6out post_OTU_blast.txt -strand both -evalue 0.01 -threads #{thread} -accel 0.3`
+puts "Done.".magenta.bold
 
 # Running the script whcih gives a final file with all the clustering info, taxa info and blast info
 `ruby #{script_directory}/final_parsing.rb -b post_OTU_blast.txt -u post_OTU_table_utax_map.txt -n #{ncbi_clust_file} -o post_final_results.txt`
 
 # Run usearch on all the reads
+puts "Utaxing cluster centroids...".green.bold
 `usearch -utax #{all_bc_reads_file} -db #{utax_db_file} -utaxout all_bc_reads.utax -utax_cutoff 0.8 -strand both -threads #{thread}`
+puts "Done.".green.bold
 
 # Run ruby script to merge the all_bc_info file and all_bc_utax files
 `ruby #{script_directory}/merge_all_info_and_utax.rb`    
