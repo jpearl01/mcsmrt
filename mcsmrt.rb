@@ -19,7 +19,7 @@ opts = Optimist::options do
   opt :uchimedbfile, "Path to database file for the uchime command", :type => :string, :short => "-c", required: true
   opt :utaxdbfile, "Path to database file for the utax command", :type => :string, :short => "-t", required: true
   opt :lineagefastafile, "Path to FASTA file with lineage info for the ublast command", :type => :string, :short => "-l", required: true
-  opt :host_db, "Path to fasta file of host genome", :type => :string, :short => "-g", default: nil
+  opt :host_db, "Path to fasta file of host genome", :type => :string, :short => "-g"
   opt :primerfile, "Path to fasta file with the primer sequences", :type => :string, :short => "-p", required: true
   opt :ncbiclusteredfile, "Path to a file with database clustering information", :type => :string, :short => "-b"
   opt :verbose, "Use -v if you want all the intermediate files, else the 6 important results file will be kept and the rest will be deleted", :short => "-v"
