@@ -49,7 +49,16 @@ File.exists?(opts[:utaxdbfile])          ? utax_db_file = opts[:utaxdbfile]     
 File.exists?(opts[:lineagefastafile])    ? lineage_fasta_file = opts[:lineagefastafile] : abort("Must supply an existing 'lineage fasta file' e.g. ncbi_lineage.fasta (for blast) with '-l'")
 File.exists?(opts[:primerfile])          ? primer_file = opts[:primerfile]              : abort("Must supply an existing fasta of the primer sequences e.g primer_seqs.fa with '-p'")
 File.exists?(opts[:ncbiclusteredfile])   ? ncbi_clust_file = opts[:ncbiclusteredfile]   : abort("Must supply an existing file with database clustering information with '-b'")
-!opts[:host_db].nil? && File.exists?(opts[:host_db])  ? human_db = opts[:host_db]      : abort("Cannot find host genome file e.g. human_g1k.fasta with '-g'")
+
+human_db = nil
+if !opts[:host_db].nil? 
+  if File.exists?(opts[:host_db])  
+    human_db = opts[:host_db]      
+  else 
+    abort("Cannot find host genome file e.g. human_g1k.fasta with '-g'")
+  end
+end
+
 
 
 thread = opts[:threads].to_i
