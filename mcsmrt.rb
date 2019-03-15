@@ -311,7 +311,7 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
   file_basename = File.basename(all_bc_reads_file, ".*")
 
   # Opening the file in which all the information is going to be written to... and printing the header to it! 
-  all_info_out_file = File.open("pre_all_reads_info.txt", "w")
+  all_info_out_file = File.open("pre_all_reads_info.tsv", "w")
   all_info_out_file.puts("read_name\tbasename\tccs\tbarcode\tsample\tee_pretrim\tee_posttrim\tlength_pretrim\tlength_posttrim\thost_map\tf_primer_matches\tr_primer_matches\tf_primer_start\tf_primer_end\tr_primer_start\tr_primer_end\tread_orientation\tprimer_note\tnum_of_primer_hits")
 
   # Opening the file which which will have the trimmed and oriented sequences
