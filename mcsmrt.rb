@@ -18,7 +18,7 @@ opts = Optimist::options do
   opt :lengthmin, "Manimum length below which reads will be filtered out", :type => :int, :short => "-n", :default => 500
   opt :uchimedbfile, "Path to database file for the uchime command", :type => :string, :short => "-c", required: true
   opt :utaxdbfile, "Path to database file for the utax command", :type => :string, :short => "-t", required: true
-  opt :lineagefastafile, "Path to FASTA file with lineage info for the ublast command", :type => :string, :short => "-l", required: true
+  opt :lineagefastafile, "Path to FASTA file with lineage info for the ublast command", :type => :string, :short => "-l"
   opt :host_db, "Path to fasta file of host genome", :type => :string, :short => "-g"
   opt :primerfile, "Path to fasta file with the primer sequences", :type => :string, :short => "-p", required: true
   opt :ncbiclusteredfile, "Path to a file with database clustering information", :type => :string, :short => "-b"
@@ -49,6 +49,11 @@ File.exists?(opts[:utaxdbfile])          ? utax_db_file = opts[:utaxdbfile]     
 File.exists?(opts[:lineagefastafile])    ? lineage_fasta_file = opts[:lineagefastafile] : abort("Must supply an existing 'lineage fasta file' e.g. ncbi_lineage.fasta (for blast) with '-l'")
 File.exists?(opts[:primerfile])          ? primer_file = opts[:primerfile]              : abort("Must supply an existing fasta of the primer sequences e.g primer_seqs.fa with '-p'")
 File.exists?(opts[:ncbiclusteredfile])   ? ncbi_clust_file = opts[:ncbiclusteredfile]   : abort("Must supply an existing file with database clustering information with '-b'")
+
+lineage_fasta_file = nil
+if !opts[:lineagefastafile].nil?
+  File.exists?(opts[:lineagefastafile])    ? lineage_fasta_file = opts[:lineagefastafile] : abort("Must supply an existing 'lineage fasta file' e.g. ncbi_lineage.fasta (for blast) with '-l'")
+end
 
 human_db = nil
 if !opts[:host_db].nil? 
@@ -590,12 +595,17 @@ puts "Generating Reports...".green.bold
 puts "Done.".green.bold
 
 # Running blast on the OTUs
-puts "Blasting OTU centroids...".magenta.bold                                                                                  
-`usearch -ublast post_OTU.fa -db #{lineage_fasta_file} -top_hit_only -id 0.9 -blast6out post_OTU_blast.txt -strand both -evalue 0.01 -threads #{thread} -accel 0.3`
-puts "Done.".magenta.bold
+if !lineage_fasta_file.nil?
+  puts "Blasting OTU centroids...".magenta.bold                                                                                  
+  `usearch -ublast post_OTU.fa -db #{lineage_fasta_file} -top_hit_only -id 0.9 -blast6out post_OTU_blast.txt -strand both -evalue 0.01 -threads #{thread} -accel 0.3`
+  puts "Done.".magenta.bold
 
-# Running the script whcih gives a final file with all the clustering info, taxa info and blast info
-`ruby #{script_directory}/final_parsing.rb -b post_OTU_blast.txt -u post_OTU_table_utax_map.txt -n #{ncbi_clust_file} -o post_final_results.txt`
+  # Running the script whcih gives a final file with all the clustering info, taxa info and blast info
+  `ruby #{script_directory}/final_parsing.rb -b post_OTU_blast.txt -u post_OTU_table_utax_map.txt -n #{ncbi_clust_file} -o post_final_results.txt`
+else  
+  `ruby #{script_directory}/final_parsing.rb -u post_OTU_table_utax_map.txt -n #{ncbi_clust_file} -o post_final_results.txt`
+end
+
 
 # Run usearch on all the reads
 puts "Utaxing cluster centroids...".green.bold
