@@ -602,7 +602,7 @@ if !lineage_fasta_file.nil?
   # Running the script whcih gives a final file with all the clustering info, taxa info and blast info
   `ruby #{script_directory}/final_parsing.rb -b post_OTU_blast.txt -u post_OTU_table_utax_map.tsv -n #{ncbi_clust_file} -o post_final_results.tsv`
 else  
-  `ruby #{script_directory}/final_parsing.rb -u post_OTU_table_utax_map.txt -n #{ncbi_clust_file} -o post_final_results.tsv`
+  `ruby #{script_directory}/final_parsing.rb -u post_OTU_table_utax_map.tsv -n #{ncbi_clust_file} -o post_final_results.tsv`
 end
 
 
@@ -673,8 +673,8 @@ else
   File.delete("post_OTU_chimeras.fa")
   File.delete("post_OTU_nonchimeras.fa")
   File.delete("post_OTU_table.tsv")
-  File.delete("post_OTU_table_utax_map.txt")
-  File.delete("post_OTU_uchime_output.txt")
+  File.delete("post_OTU_table_utax_map.tsv")
+  File.delete("post_OTU_uchime_output.tsv")
   File.delete("post_readmap.uc")
   File.delete("post_reads.utax")
   File.delete("post_unmapped_userach_global.fa")
