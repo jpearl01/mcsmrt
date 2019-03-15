@@ -87,7 +87,7 @@ class Read_sequence
     @ee_posttrim       = -1 
     @length_pretrim    = -1
     @length_posttrim   = -1
-    @host_map          = false 
+    @host_map          = nil 
     @f_primer_matches  = false
     @r_primer_matches  = false
     @f_primer_start    = "NA"
@@ -554,14 +554,11 @@ trimmed_hash.each do |key, value|
   #puts all_reads_hash[key_in_all_reads_hash].read_name
 
   # Writing to files based on filtering
-  if all_reads_hash[key_in_all_reads_hash].ccs >= ccs and all_reads_hash[key_in_all_reads_hash].ee_posttrim <= ee and all_reads_hash[key_in_all_reads_hash].length_posttrim >= length_min and all_reads_hash[key_in_all_reads_hash].length_posttrim <= length_max and all_reads_hash[key_in_all_reads_hash].host_map == false
+  if all_reads_hash[key_in_all_reads_hash].ccs >= ccs and all_reads_hash[key_in_all_reads_hash].ee_posttrim <= ee and all_reads_hash[key_in_all_reads_hash].length_posttrim >= length_min and all_reads_hash[key_in_all_reads_hash].length_posttrim <= length_max and all_reads_hash[key_in_all_reads_hash].host_map != true
     write_to_fastq(final_fastq_file, key, value[0], value[1])
-    #else
-    #  puts all_reads_hash[key_in_all_reads_hash].ccs, all_reads_hash[key_in_all_reads_hash].ee_posttrim, all_reads_hash[key_in_all_reads_hash].length_posttrim, all_reads_hash[key_in_all_reads_hash].host_map
-    #end
   end
 
-  if all_reads_hash[key_in_all_reads_hash].ccs >= ccs and all_reads_hash[key_in_all_reads_hash].length_posttrim >= length_min and all_reads_hash[key_in_all_reads_hash].length_posttrim <= length_max and all_reads_hash[key_in_all_reads_hash].host_map == false
+  if all_reads_hash[key_in_all_reads_hash].ccs >= ccs and all_reads_hash[key_in_all_reads_hash].length_posttrim >= length_min and all_reads_hash[key_in_all_reads_hash].length_posttrim <= length_max and all_reads_hash[key_in_all_reads_hash].host_map != true
     write_to_fastq(file_for_usearch_global, key, value[0], value[1])
   end
 
@@ -570,13 +567,13 @@ trimmed_hash.each do |key, value|
   if all_reads_hash[key_in_all_reads_hash].primer_note == "good"
     report_hash[basename_key].primer_filt += 1
   end
-  if all_reads_hash[key_in_all_reads_hash].primer_note == "good" and all_reads_hash[key_in_all_reads_hash].host_map == false
+  if all_reads_hash[key_in_all_reads_hash].primer_note == "good" and all_reads_hash[key_in_all_reads_hash].host_map != true
     report_hash[basename_key].host_filt += 1
   end
-  if all_reads_hash[key_in_all_reads_hash].primer_note == "good" and all_reads_hash[key_in_all_reads_hash].host_map == false and all_reads_hash[key_in_all_reads_hash].length_posttrim >= length_min and all_reads_hash[key_in_all_reads_hash].length_posttrim <= length_max
+  if all_reads_hash[key_in_all_reads_hash].primer_note == "good" and all_reads_hash[key_in_all_reads_hash].host_map != true and all_reads_hash[key_in_all_reads_hash].length_posttrim >= length_min and all_reads_hash[key_in_all_reads_hash].length_posttrim <= length_max
     report_hash[basename_key].size_filt += 1
   end
-  if all_reads_hash[key_in_all_reads_hash].primer_note == "good" and all_reads_hash[key_in_all_reads_hash].host_map == false and all_reads_hash[key_in_all_reads_hash].length_posttrim >= length_min and all_reads_hash[key_in_all_reads_hash].length_posttrim <= length_max and all_reads_hash[key_in_all_reads_hash].ee_posttrim <= ee
+  if all_reads_hash[key_in_all_reads_hash].primer_note == "good" and all_reads_hash[key_in_all_reads_hash].host_map != true and all_reads_hash[key_in_all_reads_hash].length_posttrim >= length_min and all_reads_hash[key_in_all_reads_hash].length_posttrim <= length_max and all_reads_hash[key_in_all_reads_hash].ee_posttrim <= ee
     report_hash[basename_key].ee_filt += 1
   end
 
