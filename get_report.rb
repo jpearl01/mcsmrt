@@ -8,7 +8,7 @@ class Filtered_steps_2
 end
 
 # File mapping between the OTU table and the utax table                                                                                                     
-table_utax_map_file = File.open("post_OTU_table_utax_map.txt", 'w')
+table_utax_map_file = File.open("post_OTU_table_utax_map.tsv", 'w')
 report_file = File.open("post_general_report.txt", 'w')
 
 #####Initialize log variable                                                                                                                                
@@ -38,8 +38,8 @@ else
 end 
 
 ##### Dealing with uchime file for getting the ambiguous OTUs                                                                                                                                
-count_uchime = `grep "?" post_OTU_uchime_output.txt -c`
-uchime_file = File.open("post_OTU_uchime_output.txt", 'r')
+count_uchime = `grep "?" post_OTU_uchime_output.tsv -c`
+uchime_file = File.open("post_OTU_uchime_output.tsv", 'r')
 ambi_otu_size = []
 uchime_file.each do |line|
   if line.include?("?")
@@ -50,9 +50,9 @@ end
 filt_2.ambiguous_in_uchime = count_uchime.to_i
 
 ##### Dealing with OTU table and utax file.... Mapping the two!
-otus = `wc -l post_OTU_table.txt`
+otus = `wc -l post_OTU_table.tsv`
 filt_2.num_of_otus = otus.split(" ")[0]                                                                                              
-otu_table_file = File.open("post_OTU_table.txt", "r")
+otu_table_file = File.open("post_OTU_table.tsv", "r")
 otu_table_hash = {}
 otu_table_file.each do |line|
   line_array = line.split("\t")

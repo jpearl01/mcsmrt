@@ -8,7 +8,7 @@ usearch -derep_fulllength $1.fq -fastaout post_dereplicated.fa -sizeout
 usearch -cluster_otus post_dereplicated.fa -otus post_OTU.fa -uparseout post_uparse.up -relabel OTU_ -sizein -sizeout 
 
 # For filtering the chimeric reads, using the gold database, -nonchimeras needs the name of the file without the chimeric reads                              
-usearch -uchime_ref post_OTU.fa -db $2 -strand plus -nonchimeras post_OTU_nonchimeras.fa -chimeras post_OTU_chimeras.fa -uchimealns post_OTU_alignment.aln -uchimeout post_OTU_uchime_output.txt
+usearch -uchime_ref post_OTU.fa -db $2 -strand plus -nonchimeras post_OTU_nonchimeras.fa -chimeras post_OTU_chimeras.fa -uchimealns post_OTU_alignment.aln -uchimeout post_OTU_uchime_output.tsv
 
 # For mapping the reads to the OTUS's, -id 0.97 says that we want 97% similarity between the reads and the reference sequence in the OTU list, in order for mapping to occur
 usearch -usearch_global $4 -db post_OTU_nonchimeras.fa -strand plus -id 0.97 -uc post_readmap.uc -otutabout post_OTU_table.tsv -notmatched post_unmapped_userach_global.fa -userout post_usearch_glob_results.tsv -userfields query+target
