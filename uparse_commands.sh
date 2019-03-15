@@ -11,7 +11,7 @@ usearch -cluster_otus post_dereplicated.fa -otus post_OTU.fa -uparseout post_upa
 usearch -uchime_ref post_OTU.fa -db $2 -strand plus -nonchimeras post_OTU_nonchimeras.fa -chimeras post_OTU_chimeras.fa -uchimealns post_OTU_alignment.aln -uchimeout post_OTU_uchime_output.txt
 
 # For mapping the reads to the OTUS's, -id 0.97 says that we want 97% similarity between the reads and the reference sequence in the OTU list, in order for mapping to occur
-usearch -usearch_global $4 -db post_OTU_nonchimeras.fa -strand plus -id 0.97 -uc post_readmap.uc -otutabout post_OTU_table.txt -notmatched post_unmapped_userach_global.fa -userout post_usearch_glob_results.txt -userfields query+target
+usearch -usearch_global $4 -db post_OTU_nonchimeras.fa -strand plus -id 0.97 -uc post_readmap.uc -otutabout post_OTU_table.tsv -notmatched post_unmapped_userach_global.fa -userout post_usearch_glob_results.tsv -userfields query+target
 
 # For assigning taxonomy, get the udb file using makeudb_utax command 
 usearch -utax post_OTU_nonchimeras.fa -db $3 -utaxout post_reads.utax -utax_cutoff 0.8 -strand both

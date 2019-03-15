@@ -21,6 +21,6 @@ end
 (0..otu_list.size-1).each do |otu|
 	otu_name = otu_list[otu].split(";")[0]
   	puts "#{otu_list[otu]}"
-  	`grep -P "#{otu_list[otu]}$" #{up_file} | cut -f1 > split_otus/#{otu_name}_headers.txt`
+  	`grep -P "#{otu_list[otu]}$" #{up_file} | cut -f1 > split_otus/#{otu_name}_headers.tsv`
   	`usearch -fastx_getseqs #{fa_file} -labels split_otus/#{otu_name}_headers.txt -fastaout split_otus/#{otu_name}_eefilt_subset.fasta`
 end

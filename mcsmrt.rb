@@ -210,17 +210,17 @@ end
 ##### Method for primer matching 
 def primer_match (script_directory, file_basename, primer_file, thread)
 	# Run the usearch command for primer matching
-  puts "usearch -usearch_local #{file_basename}.fq -db #{primer_file} -id 0.8 -threads #{thread} -userout pre_primer_map.txt -userfields query+target+qstrand+tlo+thi+qlo+qhi+pairs+gaps+mism+diffs -strand both -gapopen 1.0 -gapext 0.5 -lopen 1.0 -lext 0.5"
-	`usearch -usearch_local #{file_basename}.fq -db #{primer_file} -id 0.8 -threads #{thread} -userout pre_primer_map.txt -userfields query+target+qstrand+tlo+thi+qlo+qhi+pairs+gaps+mism+diffs -strand both -gapopen 1.0 -gapext 0.5 -lopen 1.0 -lext 0.5`
+  puts "usearch -usearch_local #{file_basename}.fq -db #{primer_file} -id 0.8 -threads #{thread} -userout pre_primer_map.tsv -userfields query+target+qstrand+tlo+thi+qlo+qhi+pairs+gaps+mism+diffs -strand both -gapopen 1.0 -gapext 0.5 -lopen 1.0 -lext 0.5"
+	`usearch -usearch_local #{file_basename}.fq -db #{primer_file} -id 0.8 -threads #{thread} -userout pre_primer_map.tsv -userfields query+target+qstrand+tlo+thi+qlo+qhi+pairs+gaps+mism+diffs -strand both -gapopen 1.0 -gapext 0.5 -lopen 1.0 -lext 0.5`
 
   # Check to see if sequences passed primer matching, i.e., if no read has a hit for primers, the output file from the previous step will be empty!
-  abort("!!!!None of the reads mapped to the primers, check your FASTA file which has the primers!!!!") if File.zero?("pre_primer_map.txt")
+  abort("!!!!None of the reads mapped to the primers, check your FASTA file which has the primers!!!!") if File.zero?("pre_primer_map.tsv")
 
   # Run the script which parses the primer matching output
-  `ruby #{script_directory}/primer_parse.rb -p pre_primer_map.txt -o pre_primer_map_info.txt` 
+  `ruby #{script_directory}/primer_parse.rb -p pre_primer_map.tsv -o pre_primer_map_info.tsv` 
   	
   # Open the file with parsed primer matching results
-  "pre_primer_map_info.txt".nil? ==false  ? primer_matching_parsed_file = File.open("pre_primer_map_info.txt") : abort("Primer mapping parsed file was not created from primer_parse.rb")
+  "pre_primer_map_info.tsv".nil? ==false  ? primer_matching_parsed_file = File.open("pre_primer_map_info.tsv") : abort("Primer mapping parsed file was not created from primer_parse.rb")
 
   return_hash = {}
   primer_matching_parsed_file.each_with_index do |line, index|
@@ -530,7 +530,7 @@ report_hash = {}
 
 # Create a file which will have the report for number of sequences in each step
 puts "Initializing report file...".green.bold
-report_file = File.open("post_each_step_report.txt", "w") 
+report_file = File.open("post_each_step_report.tsv", "w") 
 # writing into the report file
 report_file.puts("sample\tdemultiplexed_ccs\tprimer_filt\thost_filt\tsize_filt\tee_filt\tderep_filt\tchimera_filt")
 puts "Done.".green.bold
@@ -600,9 +600,9 @@ if !lineage_fasta_file.nil?
   puts "Done.".magenta.bold
 
   # Running the script whcih gives a final file with all the clustering info, taxa info and blast info
-  `ruby #{script_directory}/final_parsing.rb -b post_OTU_blast.txt -u post_OTU_table_utax_map.txt -n #{ncbi_clust_file} -o post_final_results.txt`
+  `ruby #{script_directory}/final_parsing.rb -b post_OTU_blast.txt -u post_OTU_table_utax_map.tsv -n #{ncbi_clust_file} -o post_final_results.tsv`
 else  
-  `ruby #{script_directory}/final_parsing.rb -u post_OTU_table_utax_map.txt -n #{ncbi_clust_file} -o post_final_results.txt`
+  `ruby #{script_directory}/final_parsing.rb -u post_OTU_table_utax_map.txt -n #{ncbi_clust_file} -o post_final_results.tsv`
 end
 
 
@@ -622,7 +622,7 @@ else
 end
 
 if split_otus == "yes" and split_otu_method == "before"
-  `ruby #{script_directory}/extract_seqs_for_each_otu_noEEfilt.rb -u post_OTU_nonchimeras.fa -p post_usearch_glob_results.txt -a pre_sequences_for_usearch_global.fq`
+  `ruby #{script_directory}/extract_seqs_for_each_otu_noEEfilt.rb -u post_OTU_nonchimeras.fa -p post_usearch_glob_results.tsv -a pre_sequences_for_usearch_global.fq`
 elsif split_otus == "yes" and split_otu_method == "after"
   `ruby #{script_directory}/extract_seqs_for_each_otu.rb -u post_OTU_nonchimeras.fa -p post_uparse.up -a post_dereplicated.fa`
 end 
@@ -672,7 +672,7 @@ else
   File.delete("post_OTU_blast.txt")
   File.delete("post_OTU_chimeras.fa")
   File.delete("post_OTU_nonchimeras.fa")
-  File.delete("post_OTU_table.txt")
+  File.delete("post_OTU_table.tsv")
   File.delete("post_OTU_table_utax_map.txt")
   File.delete("post_OTU_uchime_output.txt")
   File.delete("post_readmap.uc")
@@ -684,8 +684,8 @@ else
   File.delete("pre_host_mapped.txt")
   File.delete("pre_map_to_host.bam")
   File.delete("pre_map_to_host.sam")
-  File.delete("pre_primer_map_info.txt")
-  File.delete("pre_primer_map.txt")
+  File.delete("pre_primer_map_info.tsv")
+  File.delete("pre_primer_map.tsv")
   File.delete("pre_sequences_for_clustering.fq")
   File.delete("pre_sequences_for_usearch_global.fq")
   File.delete("pre_trimmed_and_oriented.fq")
