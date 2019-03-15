@@ -46,7 +46,6 @@ end
 File.exists?(opts[:foldername])          ? folder_name = opts[:foldername]              : abort("Must supply the name of the folder with demultiplexed fastq files'-f'")
 File.exists?(opts[:uchimedbfile])        ? uchime_db_file = opts[:uchimedbfile]         : abort("Must supply an existing 'uchime database file' e.g. rdpgold.udb with '-c'")
 File.exists?(opts[:utaxdbfile])          ? utax_db_file = opts[:utaxdbfile]             : abort("Must supply an existing 'utax database file' e.g. 16s_ncbi.udb with '-t'")
-File.exists?(opts[:lineagefastafile])    ? lineage_fasta_file = opts[:lineagefastafile] : abort("Must supply an existing 'lineage fasta file' e.g. ncbi_lineage.fasta (for blast) with '-l'")
 File.exists?(opts[:primerfile])          ? primer_file = opts[:primerfile]              : abort("Must supply an existing fasta of the primer sequences e.g primer_seqs.fa with '-p'")
 File.exists?(opts[:ncbiclusteredfile])   ? ncbi_clust_file = opts[:ncbiclusteredfile]   : abort("Must supply an existing file with database clustering information with '-b'")
 
