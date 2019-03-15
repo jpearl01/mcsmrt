@@ -328,6 +328,7 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
   count_no_primer_match = 0
   puts "Aligning primers...".green.bold
   primer_record_hash = primer_match(script_directory, file_basename, primer_file, thread)
+  abort("No primers found") if primer_record_hash.nil? || primer_record_hash.empty?
   puts "Done.".green.bold
 
   # Prereqs for the next loop
