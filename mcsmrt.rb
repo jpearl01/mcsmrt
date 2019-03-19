@@ -443,7 +443,8 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
     all_reads_hash[k].ee_pretrim = v
   end
 
-  # Loop thorugh the all_reads_hash and fill the rest of the info into it
+  # Add all remaining values to to each read record (trimming info, ee, length etc.)
+  puts "Parsing ee and trimming info for every read...".green.bold
   all_reads_hash.each do |k, v|
     if trim_req == "yes"
     	# Trim and orient sequences with the trim_and_orient method
@@ -482,8 +483,10 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
       	trimmed_hash[seqs_hash[k][2]] = [seq_oriented, qual_oriented]
     	end
     end
-    
+    puts "Done.".green.bold
     # Write all reads to output file
+
+    puts "Writing table of information for each read (all_info_out_file)...".green.bold
     all_info_out_file.puts([k,
                             all_reads_hash[k].basename,
                             all_reads_hash[k].ccs,
@@ -504,6 +507,7 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
                             all_reads_hash[k].primer_note,
                             all_reads_hash[k].num_of_primerhits].join("\t"))		
   end
+  puts "Done.".green.bold
 
   # Close the output file in which the trimmed and oriented seqs were written
   trimmed_out_file.close
