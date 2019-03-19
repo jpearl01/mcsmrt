@@ -483,7 +483,7 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
       	trimmed_hash[seqs_hash[k][2]] = [seq_oriented, qual_oriented]
     	end
     end
-    puts "Done.".green.bold
+
     # Write all reads to output file
     all_info_out_file.puts([k,
                             all_reads_hash[k].basename,
@@ -505,7 +505,7 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
                             all_reads_hash[k].primer_note,
                             all_reads_hash[k].num_of_primerhits].join("\t"))		
   end
-
+  puts "Done.".green.bold
   # Close the output file in which the trimmed and oriented seqs were written
   trimmed_out_file.close
 
