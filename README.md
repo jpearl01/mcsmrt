@@ -10,11 +10,20 @@
 ### Introduction:
 MCSMRT is a tool to cluster PacBio FL16S amplicon microbiome sequences into Operational Taxonomic Units (OTU) and assign species level taxonomic classifications. Outputs include a table of read counts assigned to each OTU centroid sequence (per sample) with corresponding taxonomic lineage, and a a table of read specific metrics (e.g., CCS count, expected error, length, primer matching result, etc.). 
 
+### Installation:
+```bash
+  $ git clone git@github.com:jpearl01/mcsmrt.git
+  $ cd mcsmrt
+```
+
 ### Dependencies: 
+(execute in the mcsmrt/ directory)
 
 1. [Ruby](https://www.ruby-lang.org/en/) v2.2.1 or greater 
    
-The simplest way is to download and install the [Ruby Version Manager (rvm)](https://rvm.io/) then:
+  The simplest way is to download and install the [Ruby Version Manager (rvm)](https://rvm.io/rvm/install) 
+
+  then:
 
    ```bash
    $ rvm install 2.2.1
@@ -58,10 +67,10 @@ The simplest way is to download and install the [Ruby Version Manager (rvm)](htt
    $ sudo dnf install h5py
    ```
 
-### Installation:
-```bash
-  $ git clone git@github.com:jpearl01/mcsmrt.git
-```
+ 9. Python 2.7 (only required if using older RSII data for ccs_passes.py)
+    [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html) is a good way to manage python versions
+
+
 
 ### Data Prerequisites:
 Data | File type | Description
