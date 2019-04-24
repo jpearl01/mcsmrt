@@ -66,7 +66,7 @@ The simplest way is to download and install the [Ruby Version Manager (rvm)](htt
 ### Data Prerequisites:
 Data | File type | Description
 --- | --- | ---
-PCR Primer Sequences | [Fasta](https://en.wikipedia.org/wiki/FASTA_format) | Forward and reverse PCR primer sequences.
+PCR Primer Sequences | [Fasta](https://en.wikipedia.org/wiki/FASTA_format) | Forward and reverse PCR primer sequences (currently must be a fasta file with two records named 'forward' and 'reverse').
 [Taxonomy Classification Database](https://drive.google.com/open?id=1UJZBU3PhEVq8lUGcjPcs2s2LbqjsQctA) | [UDB](https://www.drive5.com/usearch/manual/udb_files.html) | USEARCH formatted species level taxonomy classification database* Download the [64bit](https://www.dropbox.com/s/2squcpwg3lx19od/16S_NCBI_64bit_utax8.1.1861.udb?dl=0) or [32bit](https://www.dropbox.com/s/g5tjy7unezde1o3/16S_NCBI_32bit_utax8.1.1861.udb?dl=0) NCBI FL16S db version for usearch v8.1.861 (**Please Note:** you must use the same formatted db as the usearch executable you are using)
 [Taxonomy Classification Database](https://drive.google.com/open?id=1UJZBU3PhEVq8lUGcjPcs2s2LbqjsQctA) | [Fasta](https://en.wikipedia.org/wiki/FASTA_format) | As above, except formatted in FASTA. [Download](https://www.dropbox.com/s/kje22s4gdad2fkp/16S_NCBI_utax_and_sintax_formatted.fasta.gz?dl=0). See [Lineanator](https://github.com/bhatarchanas/lineanator) for directions to create your own.  
 Clustered Tax DB | [TSV](https://en.wikipedia.org/wiki/Tab-separated_values) | Table of cluster assignments that defines the number of closely related species to each entry in the database. [Download](data/ncbi_clustered_table.tsv) for NCBI FL16S db above
@@ -135,7 +135,7 @@ PB_jobid | data_path | forward_barcode | reverse_barcode | sample_name
 
 
 ```
-$ mcsmrt.rb -d 32 -a -f reads/ \
+$ mcsmrt.rb -d 32 -f reads/ \
 -c rdp_gold.fa \
 -t 16S_NCBI_32bit_utax8.1.1861.udb \
 -l 16S_NCBI_utax_and_sintax_formatted.fasta \

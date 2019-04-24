@@ -2,6 +2,7 @@
 
 require 'bio'
 require 'optimist'
+require 'colorize'
 
 opts = Optimist::options do
   opt :primerfile, "USEARCH results file after running the search_oligodb command", :type => :string, :short => "-p"
@@ -12,8 +13,8 @@ end
 
 #Check on inputs, error if necessary
 abort("Must provide usearch local results file name") if opts[:primerfile].nil?
-abort("Must provide an output file name") if opts[:outfile].nil?
-abort("Usearch local results file does not exist") unless File.exist?(opts[:primerfile])
+abort("Must provide an output file name")             if opts[:outfile].nil?
+abort("Usearch local results file does not exist")    unless File.exist?(opts[:primerfile])
 
 class Read
   #TODO: add default values, and define input variables to the initialize function (i.e. name="blah" in the 'new' function for the class) - DONE
@@ -54,6 +55,8 @@ pf.each do |line|
   #next unless $.<10  
   rec = line.split("\t")
   key = rec[0].split(";")[0]
+
+  abort("Currently primers must be named either 'forward' or 'reverse'".red) if (rec[1].match(/forward/).nil? && rec[1].match(/reverse/).nil?)
 
   if reads_hash.has_key?(key)
     p = Primer.new(rec[5].to_i, rec[6].to_i, rec[8].to_i, rec[2], rec[1])

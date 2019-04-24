@@ -214,13 +214,14 @@ def primer_match (script_directory, file_basename, primer_file, thread)
 	`usearch -usearch_local #{file_basename}.fq -db #{primer_file} -id 0.8 -threads #{thread} -userout pre_primer_map.tsv -userfields query+target+qstrand+tlo+thi+qlo+qhi+pairs+gaps+mism+diffs -strand both -gapopen 1.0 -gapext 0.5 -lopen 1.0 -lext 0.5`
 
   # Check to see if sequences passed primer matching, i.e., if no read has a hit for primers, the output file from the previous step will be empty!
-  abort("!!!!None of the reads mapped to the primers, check your FASTA file which has the primers!!!!") if File.zero?("pre_primer_map.tsv")
+  abort("!!!!None of the reads mapped to the primers, check your FASTA file which has the primers!!!!") if File.size?("pre_primer_map.tsv").nil?
 
   # Run the script which parses the primer matching output
   `ruby #{script_directory}/primer_parse.rb -p pre_primer_map.tsv -o pre_primer_map_info.tsv` 
+  abort("Parsing the primer output failed, primer fasta headers should have 'forward' and 'reverse' in the names".red) if File.size?("pre_primer_map_info.tsv").nil?
   	
   # Open the file with parsed primer matching results
-  "pre_primer_map_info.tsv".nil? ==false  ? primer_matching_parsed_file = File.open("pre_primer_map_info.tsv") : abort("Primer mapping parsed file was not created from primer_parse.rb")
+  File.size?("pre_primer_map_info.tsv").nil? ==false  ? primer_matching_parsed_file = File.open("pre_primer_map_info.tsv") : abort("Primer mapping parsed file was not created, or is empty (from primer_parse.rb)")
 
   return_hash = {}
   primer_matching_parsed_file.each_with_index do |line, index|
@@ -328,7 +329,7 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
   count_no_primer_match = 0
   puts "Aligning primers...".green.bold
   primer_record_hash = primer_match(script_directory, file_basename, primer_file, thread)
-  abort("No primers found") if primer_record_hash.nil? || primer_record_hash.empty?
+  abort("Primers were not found in your read sequences") if primer_record_hash.nil? || primer_record_hash.empty?
   puts "Done.".green.bold
 
   # Prereqs for the next loop
@@ -362,7 +363,7 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
       end
     end
 
-    abort("Header does not have barcode label and ccs counts! Headers should have the format @read_name;barcodelabel=sample_name;ccs=ccs_passes. Can use get_fastqs.rb for this purpose.") unless all_rec_attr.has_key?("barcodelabel") && all_rec_attr.has_key?("ccs")    
+    abort("Header does not have barcode label and ccs counts. Headers should have the format @read_name;barcodelabel=sample_name;ccs=ccs_passes. Can use get_fastqs.rb for this purpose.") unless all_rec_attr.has_key?("barcodelabel") && all_rec_attr.has_key?("ccs")    
 
     all_reads_hash[read_name]                = Read_sequence.new
     all_reads_hash[read_name].read_name      = all_rec_attr[:read_name]
@@ -445,6 +446,7 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
 
   # Add all remaining values to to each read record (trimming info, ee, length etc.)
   puts "Parsing ee and trimming info for every read...".green.bold
+  abort("There was a problem parsing, trimming, or orienting the reads".red) if all_reads_hash.empty?
   all_reads_hash.each do |k, v|
     if trim_req == "yes"
     	# Trim and orient sequences with the trim_and_orient method
@@ -693,3 +695,4 @@ else
   File.delete("pre_trimmed_and_oriented.fq")
 end
 #=end
+e
