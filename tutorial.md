@@ -40,13 +40,12 @@ $ ruby ~/mcsmrt/mcsmrt.rb -f reads/ \
 -c ~/mcsmrt/tutorial/rdp_gold.fa \
 -t ~/mcsmrt/tutorial/16sMicrobial_ncbi_lineage_reference_database.udb \
 -l ~/mcsmrt/tutorial/16sMicrobial_ncbi_lineage.fasta \
--g /path/to/human/genome/fasta \
 -p ~/mcsmrt/tutorial/primers.fasta \
 -b ~/mcsmrt/data/ncbi_clustered_table.tsv \
 -v
 ```
 
-   With the `-g` option, provide the path to the complete human genome in FASTA format. The other input files required to run this script are provided in the tutorial folder.
+   With the `-g` option, it is possible to provide a path to a fasta formatted file of a complete host genome, e.g. `-g /path/to/human.fasta`. This will filter out any spurious host sequence that may have inadvertantly amplified during pcr. The other input files required to run this script are provided in the tutorial folder.
 
 ### Example output files:
 After successful completion of the command which runs the `mcsmrt.rb` script, various output files are generated. The most imporatant/useful output files are pre_all_reads_info.txt and post_final_results.txt. As an example, results run through MCSMRT using data from BEI mock community is added in the folder called example_output_files. 
