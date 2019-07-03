@@ -37,10 +37,10 @@ $ ruby ~/mcsmrt/get_fastqs.rb -s sample_key.tsv -o reads
 ```bash
 $ ruby ~/mcsmrt/mcsmrt.rb -f reads/ \
 -d 1 \
--c ~/mcsmrt/tutorial/rdp_gold.fa \
--t ~/mcsmrt/tutorial/16sMicrobial_ncbi_lineage_reference_database.udb \
--l ~/mcsmrt/tutorial/16sMicrobial_ncbi_lineage.fasta \
--p ~/mcsmrt/tutorial/primers.fasta \
+-c ~/mcsmrt_tutorial/rdp_gold.fa \
+-t ~/mcsmrt_tutorial/16sMicrobial_ncbi_lineage_reference_database.udb \
+-l ~/mcsmrt_tutorial/16sMicrobial_ncbi_lineage.fasta \
+-p ~/mcsmrt_tutorial/primers.fasta \
 -b ~/mcsmrt/data/ncbi_clustered_table.tsv \
 -v
 ```
