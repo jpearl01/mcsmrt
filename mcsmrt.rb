@@ -4,27 +4,39 @@ require 'bio'
 require 'optimist'
 require 'colorize'
 
-# USAGE: ruby /data/shared/homes/archana/projects/mcsmrt/mcsmrt.rb -a -f reads/ -d 32 -e 1 -s 5 -x 2000 -n 500 -c /data/shared/homes/archana/projects/rdp_gold.fa -t /data/shared/homes/archana/projects/lineanator/16sMicrobial_ncbi_lineage_reference_database.udb -l /data/shared/homes/archana/projects/lineanator/16sMicrobial_ncbi_lineage.fasta -g /data/shared/homes/archana/projects/human_g1k_v37.fasta -p /data/shared/homes/archana/projects/primers.fasta -b /data/shared/homes/archana/projects//mcsmrt/ncbi_clustered_table.tsv -v
+# USAGE: ruby /data/shared/homes/archana/projects/mcsmrt/mcsmrt.rb -f reads/ -d 32 -e 1 -s 5 -x 2000 -n 500 -c /data/shared/homes/archana/projects/rdp_gold.fa -t /data/shared/homes/archana/projects/lineanator/16sMicrobial_ncbi_lineage_reference_database.udb -l /data/shared/homes/archana/projects/lineanator/16sMicrobial_ncbi_lineage.fasta -g /data/shared/homes/archana/projects/human_g1k_v37.fasta -p /data/shared/homes/archana/projects/primers.fasta -b /data/shared/homes/archana/projects//mcsmrt/ncbi_clustered_table.tsv -v
 
 
 opts = Optimist::options do
-  opt :foldername, "Folder with the demultiplexed files for clustering", :type => :string, :short => "-f"
-  opt :samplelist, "File with a subset of fastq files to be used (tab separated sample_name/filepath)", :type => :string, :short => "-i"
-  opt :threads, "Number of threads you can allot for running this process", :type => :int, :short => "-d", :default => 1
-  opt :eevalue, "Expected error value greater than which reads will be filtered out", :type => :float, :short => "-e", :default => 1.0
-  opt :trimming, "Do you want to trim your sequences? Answer in yes or no", :type => :string, :short => "-m", :default => "yes"
-  opt :ccsvalue, "CCS passes lesser than which reads will be filtered out", :type => :int, :short => "-s", :default => 5
-  opt :lengthmax, "Maximum length above which reads will be filtered out", :type => :int, :short => "-x", :default => 2000
-  opt :lengthmin, "Manimum length below which reads will be filtered out", :type => :int, :short => "-n", :default => 500
-  opt :uchimedbfile, "Path to database file for the uchime command", :type => :string, :short => "-c", required: true
-  opt :utaxdbfile, "Path to database file for the utax command", :type => :string, :short => "-t", required: true
-  opt :lineagefastafile, "Path to FASTA file with lineage info for the ublast command", :type => :string, :short => "-l"
-  opt :host_db, "Path to fasta file of host genome", :type => :string, :short => "-g"
-  opt :primerfile, "Path to fasta file with the primer sequences", :type => :string, :short => "-p", required: true
-  opt :ncbiclusteredfile, "Path to a file with database clustering information", :type => :string, :short => "-b"
-  opt :verbose, "Use -v if you want all the intermediate files, else the 6 important results file will be kept and the rest will be deleted", :short => "-v"
-  opt :splitotu, "Do you want to split OTUs into individual fasta files? Answer in yes or no", :type => :string, :short => "-o", :default => "no"
-  opt :splitotumethod, "If you chose yes to split OTUs, do it before or after EE filtering? Answer in before or after", :type => :string, :short => "-j", :default => "after"
+  banner <<-EOS
+  MCSMRT is a pipeline to cluster PacBio reads into OTU clusters, then classify each OTU representative.
+  By default this is done against a custom made database of all FL16S genes from the NCBI, but can take
+  user created datbases instead.
+
+  Usage(basic):
+         ruby mcsmrt/mcsmrt.rb -f reads/ -p primers.fasta -c rdp_gold.fa -t 16sMicrobial_ncbi_lineage_reference_database.udb 
+  Usage(Advanced):
+         ruby mcsmrt/mcsmrt.rb -f reads/ -d 32 -e 1 -s 5 -x 2000 -n 500 -c rdp_gold.fa -t 16sMicrobial_ncbi_lineage_reference_database.udb -l 16sMicrobial_ncbi_lineage.fasta -g human_g1k_v37.fasta -p primers.fasta -b mcsmrt/ncbi_clustered_table.tsv -v
+  Options:
+  EOS
+
+  opt :foldername, "Folder with fastq files, one per sample (sample names from filename) (-f or -i required)", type: :string, short: "-f"
+  opt :samplelist, "List of fastq files (tab separated sample_name/filepath, -f or -i required)", type: :string, short: "-i"
+  opt :primerfile, "Primer sequence fasta, headers must be 'forward' or 'reverse' (required)", :type => :string, :short => "-p", required: true
+  opt :uchimedbfile, "Chimera database (required)", type: :string, short: "-c", required: true
+  opt :utaxdbfile, "Taxonomy classification database (required)", type: :string, short: "-t", required: true
+  opt :threads, "Number of threads", type: :int, short: "-d", default: 1
+  opt :eevalue, "Expected error (EE) threshold. EE>-e reads filtered out", type: :float, short: "-e", default: 1.0
+  opt :trimming, "Trim primers? [yes or no]", type: :string, short: "-m", default: "yes"
+  opt :ccsvalue, "Minimum number CCS passes", type: :int, short: "-s", default: 5
+  opt :lengthmax, "Maximum read length", type: :int, short: "-x", default: 2000
+  opt :lengthmin, "Minimum read length", type: :int, short: "-n", default: 500
+  opt :lineagefastafile, "Fasta version of taxonomy database", type: :string, short: "-l"
+  opt :host_db, "Fasta of host genome - can be tar.gz", type: :string, short: "-g"
+  opt :ncbiclusteredfile, "Clustered ncbi database", type: :string, short: "-b"
+  opt :verbose, "Keep all output files, otherwise only 6 'important' result files kept", short: "-v", default: true
+  opt :splitotu, "Split reads mapping to each OTU into individual fasta files? ['yes' or 'no']", type: :string, short: "-o", default: "no"
+  opt :splitotumethod, "If creating individual OTU fastas, use reads before or after EE filtering? (if -o yes) ['before' or 'after']", type: :string, short: "-j", default: "after"
 end 
 
 ##### Assigning variables to the input and make sure we got all the inputs
@@ -51,7 +63,7 @@ File.exists?(opts[:ncbiclusteredfile])   ? ncbi_clust_file = opts[:ncbiclustered
 
 lineage_fasta_file = nil
 if !opts[:lineagefastafile].nil?
-  File.exists?(opts[:lineagefastafile])    ? lineage_fasta_file = opts[:lineagefastafile] : abort("Must supply an existing 'lineage fasta file' e.g. ncbi_lineage.fasta (for blast) with '-l'")
+  File.exists?(opts[:lineagefastafile])  ? lineage_fasta_file = opts[:lineagefastafile] : abort("Fasta of taxonomy database must exist if provided e.g. ncbi_lineage.fasta (for blast) with '-l'")
 end
 
 human_db = nil
@@ -65,19 +77,19 @@ end
 
 
 
-thread = opts[:threads].to_i
-ee = opts[:eevalue].to_f 
-trim_req = opts[:trimming].to_s
-ccs = opts[:ccsvalue].to_i 
-length_max = opts[:lengthmax].to_i 
-length_min = opts[:lengthmin].to_i
-split_otus = opts[:splitotu].to_s
+thread           = opts[:threads].to_i
+ee               = opts[:eevalue].to_f 
+trim_req         = opts[:trimming].to_s
+ccs              = opts[:ccsvalue].to_i 
+length_max       = opts[:lengthmax].to_i 
+length_min       = opts[:lengthmin].to_i
+split_otus       = opts[:splitotu].to_s
 split_otu_method = opts[:splitotumethod].to_s
 
 ##### Get the path to the directory in which the scripts exist 
 script_directory = File.dirname(__FILE__)
 
-##### Class that stores information about each record from the reads file
+##### Class for each read record
 class Read_sequence
   attr_accessor :read_name, :basename, :ccs, :barcode, :sample, :ee_pretrim, :ee_posttrim, :length_pretrim, :length_posttrim, :host_map, :f_primer_matches, :r_primer_matches, :f_primer_start, :f_primer_end, :r_primer_start, :r_primer_end, :read_orientation, :primer_note, :num_of_primerhits
 
@@ -104,7 +116,7 @@ class Read_sequence
   end
 end
 
-##### Class that stores information about each sample and the number of reads which pass each step
+##### Class for number of reads passing each filter per sample
 class Report
   attr_accessor :total, :ee_filt, :size_filt, :host_filt, :primer_filt, :derep_filt, :chimera_filt
 
@@ -124,21 +136,20 @@ end
 
 ##### Method to concatenate files to create one file for clustering
 def concat_files (folder_name, all_files, sample_list)
-  #puts all_files
   if all_files.nil?
     sample_list_file = File.open(sample_list)
     list = []
     sample_list_file.each do |line|
       list.push("#{folder_name}/"+line.strip)
     end
-    #puts list
-    `cat #{list.join(" ")} > pre_demultiplexed_ccsfilt.fq`
+    system("cat #{list.join(" ")} > pre_demultiplexed_ccsfilt.fq") or raise "Failed to concatenate files: #{list.join(" ")}"
 
   else
-    `cat #{folder_name}/#{all_files} > pre_demultiplexed_ccsfilt.fq` 
+    system("cat #{folder_name}/#{all_files} > pre_demultiplexed_ccsfilt.fq") or raise "Failed to concatenate fastqs: #{folder_name}/#{all_files}"
+
   end
 
-  abort("!!!!The file with all the reads required for clustering does not exist!!!!") if !File.exists?("pre_demultiplexed_ccsfilt.fq")
+  abort("Error: Concatenating fastq files failed".red) if !File.exists?("pre_demultiplexed_ccsfilt.fq")
 end
 
 ##### Method to write reads in fastq format
@@ -156,11 +167,10 @@ def write_to_fastq (fh, header, sequence, quality)
   fh.write(quality + "\n")
 end
 
-##### Method whcih takes an fq file as argument and returns a hash with the read name and ee
+##### Takes fq file and returns a hash of read name and ee
 def get_ee_from_fq_file (file_basename, ee, suffix)
-	`usearch -fastq_filter #{file_basename}.fq -fastqout #{suffix} -fastq_maxee 20000 -fastq_qmax 127 -fastq_qmaxout 127 -fastq_eeout -sample all`
-	
-  abort("!!!!Expected error filtering with usearch failed!!!!") if File.zero?("#{suffix}")
+	system("usearch -fastq_filter #{file_basename}.fq -fastqout #{suffix} -fastq_maxee 20000 -fastq_qmax 127 -fastq_qmaxout 127 -fastq_eeout -sample all") or raise "Expected error filtering failed.".red
+	abort("Error: Expected error filtering with usearch failed".red) if File.zero?("#{suffix}")
 
 	# Hash that is returned from this method (read name - key, ee - value)
 	ee_hash = {}
@@ -182,28 +192,29 @@ end
 ##### Mapping reads to the human genome
 def map_to_human_genome (file_basename, human_db, thread)
   #align all reads to the human genome                                                                                                                   
-  `bwa mem -t #{thread} #{human_db} #{file_basename}.fq > pre_map_to_host.sam`
+  system("bwa mem -t #{thread} #{human_db} #{file_basename}.fq > pre_map_to_host.sam") or raise "bwa mem command failed mapping reads to host genome. bwa must be installed and the host genome indexed 'bwa index genome_file.fa'"
 
   # Check to make sure bwa worked, which means that the index files also exist
-  abort("!!!!Index files are missing, run the bwa index command to index the reference genome and store them in the same directory as the reference genome!!!!") if File.zero?("pre_map_to_host.sam")
+  abort("Error: Index files are missing, run the bwa index command to index the reference genome and store them in the same directory as the reference genome") if File.zero?("pre_map_to_host.sam")
   
   #sambamba converts sam to bam format                                                                                                                   
-  `sambamba view -S -f bam pre_map_to_host.sam -o pre_map_to_host.bam`
+  system("sambamba view -S -f bam pre_map_to_host.sam -o pre_map_to_host.bam") or raise "sambamba command failed. Is sambamba installed and in path?"
   
   #Sort the bam file                                                                                                                                     
   #`sambamba sort -t#{thread} -o filt_non_host_sorted.bam filt_non_host.bam`
   
   #filter the bam for only ‘not unmapped’ reads -> reads that are mapped                                                                                 
-  `sambamba view -F 'not unmapped' pre_map_to_host.bam > pre_host_mapped.txt`
+  system("sambamba view -F 'not unmapped' pre_map_to_host.bam > pre_host_mapped.txt") or raise "sambamba filtering for unmapped reads failed"
   mapped_count = `cut -d ';' -f1 pre_host_mapped.txt | sort | uniq | wc -l`
   mapped_string = `cut -d ';' -f1 pre_host_mapped.txt`
   
   #filter reads out for ‘unmapped’ -> we would use these for pipeline                                                                             
-  `sambamba view -F 'unmapped' pre_map_to_host.bam > pre_filt_non_host.txt`
+  system("sambamba view -F 'unmapped' pre_map_to_host.bam > pre_filt_non_host.txt") or raise "sambamba filtering of unmapped reads failed"
   
   #convert the sam file to fastq                                                                                                                         
-  `grep -v ^@ pre_filt_non_host.txt | awk '{print \"@\"$1\"\\n\"$10\"\\n+\\n\"$11}' > pre_filt_non_host.fq`
-  
+  system("grep -v ^@ pre_filt_non_host.txt | awk '{print \"@\"$1\"\\n\"$10\"\\n+\\n\"$11}' > pre_filt_non_host.fq") or raise "conversion of same to fastq failed on unmapped host reads"
+  abort("Error: pre_filt_non_host.fq file empty or missing") if File.size?("pre_filt_non_host.fq").nil?
+
  	return mapped_count, mapped_string
 end
 
@@ -211,17 +222,17 @@ end
 def primer_match (script_directory, file_basename, primer_file, thread)
 	# Run the usearch command for primer matching
   puts "usearch -usearch_local #{file_basename}.fq -db #{primer_file} -id 0.8 -threads #{thread} -userout pre_primer_map.tsv -userfields query+target+qstrand+tlo+thi+qlo+qhi+pairs+gaps+mism+diffs -strand both -gapopen 1.0 -gapext 0.5 -lopen 1.0 -lext 0.5"
-	`usearch -usearch_local #{file_basename}.fq -db #{primer_file} -id 0.8 -threads #{thread} -userout pre_primer_map.tsv -userfields query+target+qstrand+tlo+thi+qlo+qhi+pairs+gaps+mism+diffs -strand both -gapopen 1.0 -gapext 0.5 -lopen 1.0 -lext 0.5`
+	system("usearch -usearch_local #{file_basename}.fq -db #{primer_file} -id 0.8 -threads #{thread} -userout pre_primer_map.tsv -userfields query+target+qstrand+tlo+thi+qlo+qhi+pairs+gaps+mism+diffs -strand both -gapopen 1.0 -gapext 0.5 -lopen 1.0 -lext 0.5") or raise "Usearch primer matching failed"
 
   # Check to see if sequences passed primer matching, i.e., if no read has a hit for primers, the output file from the previous step will be empty!
-  abort("!!!!None of the reads mapped to the primers, check your FASTA file which has the primers!!!!") if File.size?("pre_primer_map.tsv").nil?
+  abort("Error: None of the reads mapped to the primers, check your FASTA file which has the primers") if File.size?("pre_primer_map.tsv").nil?
 
   # Run the script which parses the primer matching output
-  `ruby #{script_directory}/primer_parse.rb -p pre_primer_map.tsv -o pre_primer_map_info.tsv` 
+  system("ruby #{script_directory}/primer_parse.rb -p pre_primer_map.tsv -o pre_primer_map_info.tsv") or raise "Error: Primer parsing failed"
   abort("Parsing the primer output failed, primer fasta headers should have 'forward' and 'reverse' in the names".red) if File.size?("pre_primer_map_info.tsv").nil?
   	
   # Open the file with parsed primer matching results
-  File.size?("pre_primer_map_info.tsv").nil? ==false  ? primer_matching_parsed_file = File.open("pre_primer_map_info.tsv") : abort("Primer mapping parsed file was not created, or is empty (from primer_parse.rb)")
+  File.size?("pre_primer_map_info.tsv").nil? == false  ? primer_matching_parsed_file = File.open("pre_primer_map_info.tsv") : abort("Primer mapping parsed file was not created, or is empty (from primer_parse.rb)")
 
   return_hash = {}
   primer_matching_parsed_file.each_with_index do |line, index|
@@ -316,7 +327,7 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
   all_info_out_file.puts("read_name\tbasename\tccs\tbarcode\tsample\tee_pretrim\tee_posttrim\tlength_pretrim\tlength_posttrim\thost_map\tf_primer_matches\tr_primer_matches\tf_primer_start\tf_primer_end\tr_primer_start\tr_primer_end\tread_orientation\tprimer_note\tnum_of_primer_hits")
 
   # Opening the file which which will have the trimmed and oriented sequences
-  trimmed_out_file = File.open("pre_trimmed_and_oriented.fq", "w")
+  trimmed_out_file = File.open("pre_trimmed_and_oriented.fq", "w") or abort("Couldn't open 'pre_trimmed_and_oriented.fq' for writing")
 
   # Get the seqs which map to the host genome by calling the map_to_host_genome method
   if !human_db.nil?
@@ -329,7 +340,7 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
   count_no_primer_match = 0
   puts "Aligning primers...".green.bold
   primer_record_hash = primer_match(script_directory, file_basename, primer_file, thread)
-  abort("Primers were not found in your read sequences") if primer_record_hash.nil? || primer_record_hash.empty?
+  abort("Primers were not found in read sequences") if primer_record_hash.nil? || primer_record_hash.empty?
   puts "Done.".green.bold
 
   # Prereqs for the next loop
@@ -510,9 +521,11 @@ def process_all_bc_reads_file (script_directory, all_bc_reads_file, ee, trim_req
   puts "Done.".green.bold
   # Close the output file in which the trimmed and oriented seqs were written
   trimmed_out_file.close
+  abort("FAIL: No reads written to the pre_trimmed_and_oriented.fq file") if File.size?("pre_trimmed_and_oriented.fq").nil?
 
   # Close the output file which has all the info
   all_info_out_file.close   
+  abort("FAIL: No records were written to the 'pre_all_reads_info.tsv' file.") if File.size?("pre_all_reads_info.tsv").nil?
 
   # return the all info hash and trimmed hash
   return all_reads_hash, trimmed_hash, report_hash
@@ -611,7 +624,7 @@ end
 
 
 # Run usearch on all the reads
-puts "Utaxing cluster centroids...".green.bold
+puts "Taxonomically classifying all reads...".green.bold
 `usearch -utax #{all_bc_reads_file} -db #{utax_db_file} -utaxout all_bc_reads.utax -utax_cutoff 0.8 -strand both -threads #{thread}`
 puts "Done.".green.bold
 
