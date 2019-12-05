@@ -31,7 +31,7 @@ opts = Optimist::options do
   opt :ccsvalue, "Minimum number CCS passes", type: :int, short: "-s", default: 5
   opt :lengthmax, "Maximum read length", type: :int, short: "-x", default: 2000
   opt :lengthmin, "Minimum read length", type: :int, short: "-n", default: 500
-  opt :lineagefastafile, "Fasta version of taxonomy database", type: :string, short: "-l"
+#  opt :lineagefastafile, "Fasta version of taxonomy database", type: :string, short: "-l"
   opt :host_db, "Fasta of host genome - can be tar.gz", type: :string, short: "-g"
   opt :ncbiclusteredfile, "Clustered ncbi database", type: :string, short: "-b"
   opt :verbose, "Keep all output files, otherwise only 6 'important' result files kept", short: "-v", default: true
@@ -39,13 +39,15 @@ opts = Optimist::options do
   opt :splitotumethod, "If creating individual OTU fastas, use reads before or after EE filtering? (if -o yes) ['before' or 'after']", type: :string, short: "-j", default: "after"
 end 
 
+if !opts[:samplelist].nil? && !opts[:foldername].nil? abort("Please only supply either a list of fastqs, or a single directory of all fastqs (not both)")
+
 ##### Assigning variables to the input and make sure we got all the inputs
-if opts[:samplelist] != nil  
+if !opts[:samplelist].nil?  
   sample_list = opts[:samplelist]
-  all_files = nil
+elsif !opts[:foldername].nil?
+  folder_name = opts[:foldername]
 else
-  all_files = "*"
-  sample_list = nil
+  abort("Must supply a directory of fastqs, or a tab separated file of sample/filepaths")
 end              
 
 
@@ -55,16 +57,17 @@ else
   verbose = nil   
 end  
 
-File.exists?(opts[:foldername])          ? folder_name = opts[:foldername]              : abort("Must supply the name of the folder with demultiplexed fastq files'-f'")
 File.exists?(opts[:uchimedbfile])        ? uchime_db_file = opts[:uchimedbfile]         : abort("Must supply an existing 'uchime database file' e.g. rdpgold.udb with '-c'")
 File.exists?(opts[:utaxdbfile])          ? utax_db_file = opts[:utaxdbfile]             : abort("Must supply an existing 'utax database file' e.g. 16s_ncbi.udb with '-t'")
 File.exists?(opts[:primerfile])          ? primer_file = opts[:primerfile]              : abort("Must supply an existing fasta of the primer sequences e.g primer_seqs.fa with '-p'")
 File.exists?(opts[:ncbiclusteredfile])   ? ncbi_clust_file = opts[:ncbiclusteredfile]   : abort("Must supply an existing file with database clustering information with '-b'")
 
+=begin We actually don't need a fasta lineage file
 lineage_fasta_file = nil
 if !opts[:lineagefastafile].nil?
   File.exists?(opts[:lineagefastafile])  ? lineage_fasta_file = opts[:lineagefastafile] : abort("Fasta of taxonomy database must exist if provided e.g. ncbi_lineage.fasta (for blast) with '-l'")
 end
+=end
 
 human_db = nil
 if !opts[:host_db].nil? 
@@ -135,17 +138,16 @@ end
 ##################### METHODS #######################
 
 ##### Method to concatenate files to create one file for clustering
-def concat_files (folder_name, all_files, sample_list)
-  if all_files.nil?
-    sample_list_file = File.open(sample_list)
+def concat_files (folder_name, sample_list)
+  if !sample_list.nil?
     list = []
-    sample_list_file.each do |line|
+    File.open(sample_list).each do |line|
       list.push("#{folder_name}/"+line.strip)
     end
     system("cat #{list.join(" ")} > pre_demultiplexed_ccsfilt.fq") or raise "Failed to concatenate files: #{list.join(" ")}"
 
   else
-    system("cat #{folder_name}/#{all_files} > pre_demultiplexed_ccsfilt.fq") or raise "Failed to concatenate fastqs: #{folder_name}/#{all_files}"
+    system("cat #{folder_name}/*} > pre_demultiplexed_ccsfilt.fq") or raise "Failed to concatenate fastqs: #{folder_name}/*"
 
   end
 
@@ -536,7 +538,7 @@ end
 
 # Calling the method which comcatenates files
 puts "Concatenating fastq files..".green.bold
-concat_files(folder_name, all_files, sample_list)
+concat_files(folder_name, sample_list)
 puts "Done.".green.bold
 
 # Getting the name of the file which has all the reads

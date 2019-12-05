@@ -49,7 +49,7 @@ MCSMRT is a tool to cluster PacBio FL16S amplicon microbiome sequences into Oper
 5. [Sambamba](http://lomereiter.github.io/sambamba/)
    Precompiled binary. Add to path, e.g.:
    ```bash
-   $ tar xvf sambamba* && ln -s /path/to/sambamba ~/bin/
+   $ tar xvf sambamba* && chmod +x /path/to/sambamba && ln -s /path/to/sambamba ~/bin/sambamba
    ```
 
 
@@ -77,7 +77,6 @@ Data | File type | Description
 --- | --- | ---
 PCR Primer Sequences | [Fasta](https://en.wikipedia.org/wiki/FASTA_format) | Forward and reverse PCR primer sequences (currently must be a fasta file with two records named 'forward' and 'reverse').
 [Taxonomy Classification Database](https://drive.google.com/open?id=1UJZBU3PhEVq8lUGcjPcs2s2LbqjsQctA) | [UDB](https://www.drive5.com/usearch/manual/udb_files.html) | USEARCH formatted species level taxonomy classification database* Download the [64bit](https://www.dropbox.com/s/2squcpwg3lx19od/16S_NCBI_64bit_utax8.1.1861.udb?dl=0) or [32bit](https://www.dropbox.com/s/g5tjy7unezde1o3/16S_NCBI_32bit_utax8.1.1861.udb?dl=0) NCBI FL16S db version for usearch v8.1.861 (**Please Note:** you must use the same formatted db as the usearch executable you are using)
-[Taxonomy Classification Database](https://drive.google.com/open?id=1UJZBU3PhEVq8lUGcjPcs2s2LbqjsQctA) | [Fasta](https://en.wikipedia.org/wiki/FASTA_format) | As above, except formatted in FASTA. [Download](https://www.dropbox.com/s/kje22s4gdad2fkp/16S_NCBI_utax_and_sintax_formatted.fasta.gz?dl=0). See [Lineanator](https://github.com/bhatarchanas/lineanator) for directions to create your own.  
 Clustered Tax DB | [TSV](https://en.wikipedia.org/wiki/Tab-separated_values) | Table of cluster assignments that defines the number of closely related species to each entry in the database. [Download](data/ncbi_clustered_table.tsv) for NCBI FL16S db above
 [RDP gold database](http://drive5.com/uchime/gold.fa) | [Fasta](https://en.wikipedia.org/wiki/FASTA_format) | Trusted sequences used to identify chimeras with uchime. [Download](http://drive5.com/uchime/gold.fa)
 [Host Genome](https://useast.ensembl.org/Homo_sapiens/Info/Index) | [Fasta](https://en.wikipedia.org/wiki/FASTA_format) | Fasta of host genome file, indexed with BWA** [Human Genome Download](https://useast.ensembl.org/Homo_sapiens/Info/Index)
