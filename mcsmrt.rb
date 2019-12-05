@@ -31,7 +31,7 @@ opts = Optimist::options do
   opt :ccsvalue, "Minimum number CCS passes", type: :int, short: "-s", default: 5
   opt :lengthmax, "Maximum read length", type: :int, short: "-x", default: 2000
   opt :lengthmin, "Minimum read length", type: :int, short: "-n", default: 500
-#  opt :lineagefastafile, "Fasta version of taxonomy database", type: :string, short: "-l"
+  opt :lineagefastafile, "Fasta version of taxonomy database", type: :string, short: "-l"
   opt :host_db, "Fasta of host genome - can be tar.gz", type: :string, short: "-g"
   opt :ncbiclusteredfile, "Clustered ncbi database", type: :string, short: "-b"
   opt :verbose, "Keep all output files, otherwise only 6 'important' result files kept", short: "-v", default: true
@@ -39,7 +39,8 @@ opts = Optimist::options do
   opt :splitotumethod, "If creating individual OTU fastas, use reads before or after EE filtering? (if -o yes) ['before' or 'after']", type: :string, short: "-j", default: "after"
 end 
 
-if !opts[:samplelist].nil? && !opts[:foldername].nil? abort("Please only supply either a list of fastqs, or a single directory of all fastqs (not both)")
+
+abort("Please only supply either a list of fastqs, or a single directory of all fastqs (not both)") if !opts[:samplelist].nil? && !opts[:foldername].nil? 
 
 ##### Assigning variables to the input and make sure we got all the inputs
 if !opts[:samplelist].nil?  
@@ -140,11 +141,22 @@ end
 ##### Method to concatenate files to create one file for clustering
 def concat_files (folder_name, sample_list)
   if !sample_list.nil?
-    list = []
+
+    fastq_out = File.open("pre_demultiplexed_ccsfilt.fq", 'w')
     File.open(sample_list).each do |line|
-      list.push("#{folder_name}/"+line.strip)
+      arr = line.split("\t")
+      puts "First value #{arr[0]}: Second value: #{arr[1]}"
+      File.open(arr[1].chomp).each do |l2|
+        if /"barcodelabel"/.match(l2)
+          fastq_out.puts l2.gsub("barcodelabel=([^;]+)", "barcodelabel=#{arr[0]}")
+        elsif /^@/.match(l2) && $.%4==1
+          fastq_out.puts l2.chomp + "barcodelabel=#{arr[0]};"
+        else
+          fastq_out.puts l2
+        end  
+      end
     end
-    system("cat #{list.join(" ")} > pre_demultiplexed_ccsfilt.fq") or raise "Failed to concatenate files: #{list.join(" ")}"
+    fastq_out.close
 
   else
     system("cat #{folder_name}/*} > pre_demultiplexed_ccsfilt.fq") or raise "Failed to concatenate fastqs: #{folder_name}/*"
@@ -613,7 +625,7 @@ puts "Generating Reports...".green.bold
 puts "Done.".green.bold
 
 # Running blast on the OTUs
-if !lineage_fasta_file.nil?
+if !opts[:lineagefastafile].nil?
   puts "Blasting OTU centroids...".magenta.bold                                                                                  
   `usearch -ublast post_OTU.fa -db #{lineage_fasta_file} -top_hit_only -id 0.9 -blast6out post_OTU_blast.txt -strand both -evalue 0.01 -threads #{thread} -accel 0.3`
   puts "Done.".magenta.bold
@@ -710,4 +722,3 @@ else
   File.delete("pre_trimmed_and_oriented.fq")
 end
 #=end
-e
