@@ -34,7 +34,7 @@ Dir.glob(File.join(fq_folder,'/*.f*')) do |f|
 			if passes_dict.has_key?(rec)
 				pass = passes_dict[rec]	
 			else
-				abort("rec did not have a number of passes")
+				abort("#{rec} rec did not have a number of passes")
 			end
 
 			line = "@#{rec};barcodelabel=#{h};ccs=#{pass};"
