@@ -169,24 +169,24 @@ $ mcsmrt.rb -d 32 -i paths_to_fastq.tsv \
 Option | Description
 --------- | ----------- 
 **Mandatory** | 
-`--fastqFolder\ (-f)` | Folder path of all fastq files.
-`--samplelist\ (-i)` | File with a subset of tab separated sample/file_paths (one per row)
-`--hostDB\ (-g)` | Fasta formatted host reference genome file, indexed with BWA. Used to filter off-target host-mapping reads.
-`--primerfile\ (-p)` | Fasta format of all primer sequences. Needed for primer matching/trimming.
-`--uchimedbfile\ (-c)` | Fasta formatted database file with trusted 16s sequences.  Used to filter chimeric OTU sequences.
-`--utaxdbfile\ (-t)` | UDB format database file with lineage assigned to each 16S sequence. Custom database file was created with [Lineanator](https://github.com/bhatarchanas/lineanator) using the NCBI 16S BLAST and taxonomy databases. To learn more, [see this reference](http://www.drive5.com/usearch/manual/cmd_makeudb_utax.html).
-`--clustereddb\ (-b)` | Table of database OTUs (dbOTU). Used to identify classifications with many closely related entries in the taxonomy database.
+`--fastqFolder<br/> (-f)` | Folder path of all fastq files.
+`--samplelist<br/> (-i)` | File with a subset of tab separated sample/file_paths (one per row)
+`--hostDB<br/> (-g)` | Fasta formatted host reference genome file, indexed with BWA. Used to filter off-target host-mapping reads.
+`--primerfile<br/> (-p)` | Fasta format of all primer sequences. Needed for primer matching/trimming.
+`--uchimedbfile<br/> (-c)` | Fasta formatted database file with trusted 16s sequences.  Used to filter chimeric OTU sequences.
+`--utaxdbfile<br/> (-t)` | UDB format database file with lineage assigned to each 16S sequence. Custom database file was created with [Lineanator](https://github.com/bhatarchanas/lineanator) using the NCBI 16S BLAST and taxonomy databases. To learn more, [see this reference](http://www.drive5.com/usearch/manual/cmd_makeudb_utax.html).
+`--clustereddb<br/> (-b)` | Table of database OTUs (dbOTU). Used to identify classifications with many closely related entries in the taxonomy database.
 **Optional** |
-`--eevalue\ (-e)` | (Default 1.0) Maximum [expected error](http://www.drive5.com/usearch/manual/expected_errors.html) (EE). Reads greater EE are removed.
-`--ccsvalue\ (-s)` | Default (5) – Minimum CCS count below which sequences are filtered out.
-`--lineagefastafile\ (-l)` | The fasta file used to create the `utaxdb` file. Used to obtain strain name, alignment length, and percent identity for each OTU sequence. **NO LONGER REQUIRED, DEPRECATED** 
-`--lengthmax\ (-x)` | Default (2000) – Maximum read length.
-`--lengthmin\ (-n)` | Default (500) – Minimum read length.
-`--trimming\ (-m)` | Default (yes) – `yes` to trim primer sequences, and `no` otherwise.
-`--threads\ (-d)` | Default (1) - Number of threads to use.
-`--verbose\ (-v)` | Keep all intermediate files
-`--splitotu\ (-o)` | Default (no) - `yes` to split reads mapping to each OTU into separate multi-FASTA files. `no` - don't
-`--splitotumethod\ (-j)` | When `splitotu` is `yes`, further define splitting OTU mapping reads before or after EE filtering. `before` or `after`. 
+`--eevalue<br/> (-e)` | (Default 1.0) Maximum [expected error](http://www.drive5.com/usearch/manual/expected_errors.html) (EE). Reads greater EE are removed.
+`--ccsvalue<br/> (-s)` | Default (5) – Minimum CCS count below which sequences are filtered out.
+`--lineagefastafile<br/> (-l)` | The fasta file used to create the `utaxdb` file. Used to obtain strain name, alignment length, and percent identity for each OTU sequence. **NO LONGER REQUIRED, DEPRECATED** 
+`--lengthmax<br/> (-x)` | Default (2000) – Maximum read length.
+`--lengthmin<br/> (-n)` | Default (500) – Minimum read length.
+`--trimming<br/> (-m)` | Default (yes) – `yes` to trim primer sequences, and `no` otherwise.
+`--threads<br/> (-d)` | Default (1) - Number of threads to use.
+`--verbose<br/> (-v)` | Keep all intermediate files
+`--splitotu<br/> (-o)` | Default (no) - `yes` to split reads mapping to each OTU into separate multi-FASTA files. `no` - don't
+`--splitotumethod<br/> (-j)` | When `splitotu` is `yes`, further define splitting OTU mapping reads before or after EE filtering. `before` or `after`. 
 
 
 For a detailed description of the output files, please see [here](detailed_file_outputs.md)
