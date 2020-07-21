@@ -73,17 +73,18 @@ MCSMRT is a tool to cluster PacBio FL16S amplicon microbiome sequences into Oper
 
 
 ### Data Prerequisites:
+**UPDATE:** You may download all required files [here](https://www.dropbox.com/sh/xodhq7pek6rfkaa/AABKUuUJqeEE5pmWg9OwPo6oa?dl=0)
 Data | File type | Description
 --- | --- | ---
 PCR Primer Sequences | [Fasta](https://en.wikipedia.org/wiki/FASTA_format) | Forward and reverse PCR primer sequences (currently must be a fasta file with two records named 'forward' and 'reverse').
-[Taxonomy Classification Database](https://drive.google.com/open?id=1UJZBU3PhEVq8lUGcjPcs2s2LbqjsQctA) | [UDB](https://www.drive5.com/usearch/manual/udb_files.html) | USEARCH formatted species level taxonomy classification database* Download the [64bit](https://www.dropbox.com/s/2squcpwg3lx19od/16S_NCBI_64bit_utax8.1.1861.udb?dl=0) or [32bit](https://www.dropbox.com/s/g5tjy7unezde1o3/16S_NCBI_32bit_utax8.1.1861.udb?dl=0) NCBI FL16S db version for usearch v8.1.861 (**Please Note:** you must use the same formatted db as the usearch executable you are using)
+[Taxonomy Classification Database](https://drive.google.com/open?id=1UJZBU3PhEVq8lUGcjPcs2s2LbqjsQctA) | [UDB](https://www.drive5.com/usearch/manual/udb_files.html) | USEARCH formatted species level taxonomy classification database* Download the [64bit](https://www.dropbox.com/s/2squcpwg3lx19od/16S_NCBI_64bit_utax8.1.1861.udb?dl=0) or [32bit](https://www.dropbox.com/s/g5tjy7unezde1o3/16S_NCBI_32bit_utax8.1.1861.udb?dl=0) NCBI FL16S db version for usearch v8.1.861 (**Please Note:** you must use the same formatted db as the usearch executable you are using the free version is **32bit**)
 Clustered Tax DB | [TSV](https://en.wikipedia.org/wiki/Tab-separated_values) | Table of cluster assignments that defines the number of closely related species to each entry in the database. [Download](data/ncbi_clustered_table.tsv) for NCBI FL16S db above
-[RDP gold database](http://drive5.com/uchime/gold.fa) | [Fasta](https://en.wikipedia.org/wiki/FASTA_format) | Trusted sequences used to identify chimeras with uchime. [Download](http://drive5.com/uchime/gold.fa)
-[Host Genome](https://useast.ensembl.org/Homo_sapiens/Info/Index) | [Fasta](https://en.wikipedia.org/wiki/FASTA_format) | Fasta of host genome file, indexed with BWA** [Human Genome Download](https://useast.ensembl.org/Homo_sapiens/Info/Index)
+[RDP gold database](http://drive5.com/uchime/gold.fa) | [Fasta](https://en.wikipedia.org/wiki/FASTA_format) | Trusted sequences used to identify chimeras with uchime. This file is called 'gold.fa' at this download link, and is equivalent to 'rdp_gold.fa' used in the example commands below [Download](http://drive5.com/uchime/gold.fa)
+[Host Genome](https://useast.ensembl.org/Homo_sapiens/Info/Index) | [Fasta](https://en.wikipedia.org/wiki/FASTA_format) | Fasta of host genome file, MUST index with BWA after download** [Human Genome Download](https://useast.ensembl.org/Homo_sapiens/Info/Index)
 
 *[Linnaean](https://en.wikipedia.org/wiki/Linnaean_taxonomy) taxonomy to classify OTU sequences. Linked databases were created using a curated set of the [NCBI's](https://www.ncbi.nlm.nih.gov/) 16S BLAST and taxonomy databases. To create your own [see here](http://www.drive5.com/usearch/manual/cmd_makeudb_utax.html). A tool that can generate this database called Lineanator is available [here](https://github.com/bhatarchanas/lineanator). 
 
-**This may or may not make sense, depending on the provenance of your samples. This file is for filtration of off-target host sequence reads.
+**Using a host genome may or may not make sense, depending on the provenance of your samples. This file is for filtration of off-target host sequence reads. If your samples come from an organism other than Human, you would want do download the fasta reference genome of your other host.  If your samples come from the environment, or other non-host associated origin, you would not need this. Please see [indexing with BWA here](http://bio-bwa.sourceforge.net/bwa.shtml) to prepare your fasta reference for use with MCSMRT.  You probably want to use a relatively recent version of your host genome, but otherwise the version of the genome doesn't matter.
 
 ## Tutorial and Links to Example Data 
 [**Find Here**](tutorial.md)
@@ -168,24 +169,24 @@ $ mcsmrt.rb -d 32 -i paths_to_fastq.tsv \
 Option | Description
 --------- | ----------- 
 **Mandatory** | 
-`fastqFolder (-f)` | Folder path of all fastq files.
-`samplelist (-i)` | File with a subset of tab separated sample/file_paths (one per row)
-`hostDB (-g)` | Fasta formatted host reference genome file, indexed with BWA. Used to filter off-target host-mapping reads.
-`primerfile (-p)` | Fasta format of all primer sequences. Needed for primer matching/trimming.
-`uchimedb (-c)` | Fasta formatted database file with trusted 16s sequences.  Used to filter chimeric OTU sequences.
-`utaxdb (-t)` | UDB format database file with lineage assigned to each 16S sequence. Custom database file was created with [Lineanator](https://github.com/bhatarchanas/lineanator) using the NCBI 16S BLAST and taxonomy databases. To learn more, [see this reference](http://www.drive5.com/usearch/manual/cmd_makeudb_utax.html).
-`lineagefasta (-l)` | The fasta file used to create the `utaxdb` file. Used to obtain strain name, alignment length, and percent identity for each OTU sequence.
-`clustereddb (-b)` | Table of database OTUs (dbOTU). Used to identify classifications with many closely related entries in the taxonomy database.
+`--fastqFolder\ (-f)` | Folder path of all fastq files.
+`--samplelist\ (-i)` | File with a subset of tab separated sample/file_paths (one per row)
+`--hostDB\ (-g)` | Fasta formatted host reference genome file, indexed with BWA. Used to filter off-target host-mapping reads.
+`--primerfile\ (-p)` | Fasta format of all primer sequences. Needed for primer matching/trimming.
+`--uchimedbfile\ (-c)` | Fasta formatted database file with trusted 16s sequences.  Used to filter chimeric OTU sequences.
+`--utaxdbfile\ (-t)` | UDB format database file with lineage assigned to each 16S sequence. Custom database file was created with [Lineanator](https://github.com/bhatarchanas/lineanator) using the NCBI 16S BLAST and taxonomy databases. To learn more, [see this reference](http://www.drive5.com/usearch/manual/cmd_makeudb_utax.html).
+`--clustereddb\ (-b)` | Table of database OTUs (dbOTU). Used to identify classifications with many closely related entries in the taxonomy database.
 **Optional** |
-`eevalue (-e)` | (Default 1.0) Maximum [expected error](http://www.drive5.com/usearch/manual/expected_errors.html) (EE). Reads greater EE are removed.
-`ccsvalue (-s)` | Default (5) – Minimum CCS count below which sequences are filtered out.
-`lengthmax (-x)` | Default (2000) – Maximum read length.
-`lengthmin (-n)` | Default (500) – Minimum read length.
-`trimming (-m)` | Default (yes) – `yes` to trim primer sequences, and `no` otherwise.
-`threads (-d)` | Default (1) - Number of threads to use.
-`verbose (-v)` | Keep all intermediate files
-`splitotu (-o)` | Default (no) - `yes` to split reads mapping to each OTU into separate multi-FASTA files. `no` - don't
-`splitotumethod (-j)` | When `splitotu` is `yes`, further define splitting OTU mapping reads before or after EE filtering. `before` or `after`. 
+`--eevalue\ (-e)` | (Default 1.0) Maximum [expected error](http://www.drive5.com/usearch/manual/expected_errors.html) (EE). Reads greater EE are removed.
+`--ccsvalue\ (-s)` | Default (5) – Minimum CCS count below which sequences are filtered out.
+`--lineagefastafile\ (-l)` | The fasta file used to create the `utaxdb` file. Used to obtain strain name, alignment length, and percent identity for each OTU sequence. **NO LONGER REQUIRED, DEPRECATED** 
+`--lengthmax\ (-x)` | Default (2000) – Maximum read length.
+`--lengthmin\ (-n)` | Default (500) – Minimum read length.
+`--trimming\ (-m)` | Default (yes) – `yes` to trim primer sequences, and `no` otherwise.
+`--threads\ (-d)` | Default (1) - Number of threads to use.
+`--verbose\ (-v)` | Keep all intermediate files
+`--splitotu\ (-o)` | Default (no) - `yes` to split reads mapping to each OTU into separate multi-FASTA files. `no` - don't
+`--splitotumethod\ (-j)` | When `splitotu` is `yes`, further define splitting OTU mapping reads before or after EE filtering. `before` or `after`. 
 
 
 For a detailed description of the output files, please see [here](detailed_file_outputs.md)
