@@ -146,8 +146,8 @@ def concat_files (folder_name, sample_list)
     File.open(sample_list).each do |line|
       arr = line.split("\t")
       File.open(arr[1].chomp).each do |l2|
-        if /"barcodelabel"/.match(l2)
-          fastq_out.puts l2.gsub("barcodelabel=([^;]+)", "barcodelabel=#{arr[0]}")
+        if /barcodelabel/.match(l2)
+          fastq_out.puts l2.gsub(/barcodelabel=([^;]+)/, "barcodelabel=#{arr[0]}")
         elsif /^@/.match(l2) && $.%4==1
           fastq_out.puts l2.chomp + "barcodelabel=#{arr[0]};"
         else
@@ -165,7 +165,7 @@ def concat_files (folder_name, sample_list)
       bc = File.basename(filename,File.extname(filename))
       File.open(File.join(folder_name, filename)).each do |l2|
         if /barcodelabel/.match(l2)
-          fastq_out.puts l2.gsub("barcodelabel=([^;]+)", "barcodelabel=#{bc}")
+          fastq_out.puts l2.gsub(/barcodelabel=([^;]+)/, "barcodelabel=#{bc}")
         elsif /^@/.match(l2) && $.%4==1
           fastq_out.puts l2.chomp + "barcodelabel=#{bc};"
         else
