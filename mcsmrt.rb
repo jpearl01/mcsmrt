@@ -164,7 +164,7 @@ def concat_files (folder_name, sample_list)
       next if filename == '.' or filename == '..'
       bc = File.basename(filename,File.extname(filename))
       File.open(File.join(folder_name, filename)).each do |l2|
-        if /"barcodelabel"/.match(l2)
+        if /barcodelabel/.match(l2)
           fastq_out.puts l2.gsub("barcodelabel=([^;]+)", "barcodelabel=#{bc}")
         elsif /^@/.match(l2) && $.%4==1
           fastq_out.puts l2.chomp + "barcodelabel=#{bc};"
