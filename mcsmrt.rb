@@ -159,11 +159,11 @@ def concat_files (folder_name, sample_list)
     fastq_out.close
 
   else
-    system("cat #{folder_name}/*} > pre_demultiplexed_ccsfilt.fq") or raise "Failed to concatenate fastqs: #{folder_name}/*"
-
+    folder_name = folder_name.chomp('/')
+    system("cat #{folder_name}/* > pre_demultiplexed_ccsfilt.fq") or raise "Failed to concatenate fastqs: #{folder_name}/*"
   end
 
-  abort("Error: Concatenating fastq files failed".red) if !File.exists?("pre_demultiplexed_ccsfilt.fq")
+  abort("Error: Concatenating fastq files failed (using sample_list)".red) if !File.exists?("pre_demultiplexed_ccsfilt.fq")
 end
 
 ##### Method to write reads in fastq format
@@ -625,9 +625,9 @@ puts "Generating Reports...".green.bold
 puts "Done.".green.bold
 
 # Running blast on the OTUs
-if !opts[:lineagefastafile].nil?
+if !opts[:utaxdbfile].nil?
   puts "Blasting OTU centroids...".magenta.bold                                                                                  
-  `usearch -ublast post_OTU.fa -db #{lineage_fasta_file} -top_hit_only -id 0.9 -blast6out post_OTU_blast.txt -strand both -evalue 0.01 -threads #{thread} -accel 0.3`
+  `usearch -ublast post_OTU.fa -db #{utax_db_file} -top_hit_only -id 0.9 -blast6out post_OTU_blast.txt -strand both -evalue 0.01 -threads #{thread} -accel 0.3`
   puts "Done.".magenta.bold
 
   # Running the script whcih gives a final file with all the clustering info, taxa info and blast info
@@ -694,6 +694,8 @@ report_hash.each do |key, value|
                     value.derep_filt,
                     value.chimera_filt].join("\t"))
 end
+
+puts "mcsmrt successfully completed".yellow
 
 if verbose == true
   abort

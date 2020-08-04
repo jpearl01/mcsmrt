@@ -185,7 +185,7 @@ Option | Description
 `--trimming`<br/>` (-m)` | Default (yes) – `yes` to trim primer sequences, and `no` otherwise.
 `--threads`<br/>` (-d)` | Default (1) - Number of threads to use.
 `--verbose`<br/>` (-v)` | Keep all intermediate files
-`--splitotu`<br/>` (-o)` | Default (no) - `yes` to split reads mapping to each OTU into separate multi-FASTA files. `no` - don't
+`--splitotu`<br/>` (-o)` | Default (no) - `yes` split reads mapping to each OTU into separate multi-FASTA files. `no` - don't do that
 `--splitotumethod`<br/>` (-j)` | When `splitotu` is `yes`, further define splitting OTU mapping reads before or after EE filtering. `before` or `after`. 
 
 
