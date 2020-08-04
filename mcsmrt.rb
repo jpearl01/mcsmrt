@@ -145,7 +145,6 @@ def concat_files (folder_name, sample_list)
     fastq_out = File.open("pre_demultiplexed_ccsfilt.fq", 'w')
     File.open(sample_list).each do |line|
       arr = line.split("\t")
-      puts "First value #{arr[0]}: Second value: #{arr[1]}"
       File.open(arr[1].chomp).each do |l2|
         if /"barcodelabel"/.match(l2)
           fastq_out.puts l2.gsub("barcodelabel=([^;]+)", "barcodelabel=#{arr[0]}")
@@ -160,7 +159,21 @@ def concat_files (folder_name, sample_list)
 
   else
     folder_name = folder_name.chomp('/')
-    system("cat #{folder_name}/* > pre_demultiplexed_ccsfilt.fq") or raise "Failed to concatenate fastqs: #{folder_name}/*"
+    fastq_out = File.open("pre_demultiplexed_ccsfilt.fq", 'w')
+    Dir.foreach(folder_name) do |filename|
+      next if filename == '.' or filename == '..'
+      bc = File.basename(filename,File.extname(filename))
+      File.open(filename).each do |l2|
+        if /"barcodelabel"/.match(l2)
+          fastq_out.puts l2.gsub("barcodelabel=([^;]+)", "barcodelabel=#{bc}")
+        elsif /^@/.match(l2) && $.%4==1
+          fastq_out.puts l2.chomp + "barcodelabel=#{bc};"
+        else
+          fastq_out.puts l2
+        end
+      end
+    end
+    fastq_out.close
   end
 
   abort("Error: Concatenating fastq files failed (using sample_list)".red) if !File.exists?("pre_demultiplexed_ccsfilt.fq")
