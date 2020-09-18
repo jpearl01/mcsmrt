@@ -708,10 +708,9 @@ report_hash.each do |key, value|
                     value.chimera_filt].join("\t"))
 end
 
-puts "mcsmrt successfully completed".yellow
-
 if verbose == true
-  abort
+  puts "mcsmrt successfully completed".yellow
+  exit(0)
 else
   File.delete("post_dereplicated.fa")
   File.delete("post_OTU_alignment.aln")
@@ -735,5 +734,7 @@ else
   File.delete("pre_sequences_for_clustering.fq")
   File.delete("pre_sequences_for_usearch_global.fq")
   File.delete("pre_trimmed_and_oriented.fq")
+  puts "mcsmrt successfully completed".yellow
+  exit(0)  
 end
 #=end

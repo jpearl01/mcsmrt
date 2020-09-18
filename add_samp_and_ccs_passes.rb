@@ -4,15 +4,16 @@ require 'optimist'
 require 'fileutils'
 
 opts = Optimist::options do
-        opt :fastq_folder, "Folder with all fastq files to be updated", type: :string, short: "-f", required: true
-        opt :passes_file, "File with read header and ccs pass number: `read_header      pass_#`", type: :string, short
-: "-p", required: true
+        opt :fastq_folder, "Folder with fastq files to updat", type: :string, short: "-f", required: true
+        opt :passes_file, "File with read header and ccs pass number: `read_header      pass_#`", type: :string, short: "-p", required: true
         opt :outfolder, "Output folder", type: :string, short: "-o", required: true
+        opt :barcode_to_sample, "Rename fastq files from the barcode id to sample id", type: :string, short: "-b", required: false
 end
 
 fq_folder = opts[:fastq_folder]
-passes = opts[:passes_file]
+passes    = opts[:passes_file]
 outfolder = opts[:outfolder]
+bc2samp   = opts[:barcode_to_sample] if !opts[:barcode_to_sample].nil?
 
 FileUtils.mkdir_p outfolder unless File.exists?(outfolder)
 
