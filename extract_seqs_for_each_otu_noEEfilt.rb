@@ -25,5 +25,5 @@ end
   puts "#{otu_list[otu]}"
   otu_name = otu_list[otu].split(";")[0]
   `grep -P "#{otu_list[otu]}" #{uglob_file} | cut -f1 > split_otus/noEE_#{otu_name}_headers.tsv`
-  `usearch -fastx_getseqs #{fq_file} -labels split_otus/noEE_#{otu_name}_headers.txt -fastaout split_otus/noEE_#{otu_name}_eefilt_subset.fasta`
+  `usearch -fastx_getseqs #{fq_file} -labels split_otus/noEE_#{otu_name}_headers.tsv -fastaout split_otus/noEE_#{otu_name}_eefilt_subset.fasta`
 end
