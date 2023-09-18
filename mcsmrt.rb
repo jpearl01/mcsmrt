@@ -637,10 +637,10 @@ puts "Generating Reports...".green.bold
 `ruby #{script_directory}/get_report.rb #{final_fastq_basename}`
 puts "Done.".green.bold
 
-# Running blast on the OTUs
+# Running USEARCH on the OTUs
 if !opts[:utaxdbfile].nil?
-  puts "Blasting OTU centroids...".magenta.bold                                                                                  
-  `usearch -ublast post_OTU.fa -db #{utax_db_file} -top_hit_only -id 0.9 -blast6out post_OTU_blast.txt -strand both -evalue 0.01 -threads #{thread} -accel 0.3`
+  puts "Identifying high-identity alignments of OTU centroids to reference sequences...".magenta.bold                                                                                  
+  `usearch -usearch_local post_OTU.fa -db #{utax_db_file} -top_hit_only -id 0.9 -blast6out post_OTU_blast.txt -strand both -evalue 0.01 -threads #{thread}`
   puts "Done.".magenta.bold
 
   # Running the script whcih gives a final file with all the clustering info, taxa info and blast info
