@@ -640,7 +640,7 @@ puts "Done.".green.bold
 # Running USEARCH on the OTUs
 if !opts[:utaxdbfile].nil?
   puts "Identifying high-identity alignments of OTU centroids to reference sequences...".magenta.bold                                                                                  
-  `usearch -usearch_local post_OTU.fa -db #{utax_db_file} -top_hit_only -id 0.9 -blast6out post_OTU_blast.txt -strand both -evalue 0.01 -threads #{thread}`
+  `usearch -usearch_local post_OTU.fa -db #{utax_db_file} -top_hit_only -id 0.9 -blast6out post_OTU_usearch_local.txt -strand both -evalue 0.01 -threads #{thread}`
   puts "Done.".magenta.bold
 
   # Running the script whcih gives a final file with all the clustering info, taxa info and blast info
