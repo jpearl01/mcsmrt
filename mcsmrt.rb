@@ -637,7 +637,7 @@ puts "Generating Reports...".green.bold
 `ruby #{script_directory}/get_report.rb #{final_fastq_basename}`
 puts "Done.".green.bold
 
-# Running USEARCH on the OTUs
+# Running usearch on the OTUs
 if !opts[:utaxdbfile].nil?
   puts "Identifying high-identity alignments of OTU centroids to reference sequences...".magenta.bold                                                                                  
   `usearch -usearch_local post_OTU.fa -db #{utax_db_file} -top_hit_only -id 0.9 -blast6out post_OTU_usearch_local.txt -strand both -evalue 0.01 -threads #{thread}`
