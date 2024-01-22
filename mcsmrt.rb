@@ -714,7 +714,7 @@ if verbose == true
 else
   File.delete("post_dereplicated.fa")
   File.delete("post_OTU_alignment.aln")
-  File.delete("post_OTU_blast.txt")
+  File.delete("post_OTU_usearch_local.txt")
   File.delete("post_OTU_chimeras.fa")
   File.delete("post_OTU_nonchimeras.fa")
   File.delete("post_OTU_table.tsv")
