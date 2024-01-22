@@ -1,20 +1,20 @@
 require 'optimist'
 
 opts = Optimist::options do
-  opt :blastfile, "File with blast information.", :type => :string, :short => "-b"
+  opt :usearchfile, "File with usearch local information.", :type => :string, :short => "-b"
   opt :otuutaxfile, "File with OTU table and utax information.", :type => :string, :short => "-u", required: true
   opt :ncbiclusteredfile, "File with info about DB clustered", :type => :string, :short => "-n"
   opt :outfile, "Output file with OTU names, OTU counts, lineage and blast results.", :type => :string, :short => "-o", required: true
 end
 
-blast_file = File.open(opts[:blastfile], "r") unless opts[:blastfile].nil?
+usearch_file = File.open(opts[:usearchfile], "r") unless opts[:usearchfile].nil?
 otu_utax_file = File.open(opts[:otuutaxfile], "r")
 ncbi_clustered_file = File.open(opts[:ncbiclusteredfile], "r") unless opts[:ncbiclusteredfile].nil?
 out_file = File.open(opts[:outfile], "w")
 
-blast_file_hash = {}
-if !blast_file.nil?
-	blast_file.each do |line|
+usearch_file_hash = {}
+if !usearch_file.nil?
+	usearch_file.each do |line|
 		line_split = line.split("\t")
 		#puts line_split[0]
 		# get the otu name which will be the key of the hash
@@ -38,9 +38,9 @@ if !blast_file.nil?
 		alignment_length = line_split[3]
 
 		# populate the hash 
-		blast_file_hash[key] = [query, strain, complete, percent_identity, alignment_length]
+		usearch_file_hash[key] = [query, strain, complete, percent_identity, alignment_length]
 	end
-	#puts blast_file_hash
+	#puts usearch_file_hash
 end
 
 ncbi_clustered_hash = {}
@@ -69,7 +69,7 @@ end
 
 header = File.open(otu_utax_file, &:readline)
 header_split = header.split("\t")[0..-2].join("\t")
-out_file.puts(header_split+"\tdomain\tdomain_conf\tphylum\tphylum_conf\tclass\tclass_conf\torder\torder_conf\tfamily\tfamily_conf\tgenus\tgenus_conf\tspecies\tspecies_conf\tblast_query\tblast_strain\tblast_16s_completeness\tblast_percent_identity\tblast_alignment_length\tncbi_avglinkage_otu_id\tnum_of_sp_in_cluster\tnum_of_sp_in_db\tnum_of_otus_with_same_sp")
+out_file.puts(header_split+"\tdomain\tdomain_conf\tphylum\tphylum_conf\tclass\tclass_conf\torder\torder_conf\tfamily\tfamily_conf\tgenus\tgenus_conf\tspecies\tspecies_conf\tusearch_query\tusearch_strain\tusearch_16s_completeness\tusearch_percent_identity\tusearch_alignment_length\tncbi_avglinkage_otu_id\tnum_of_sp_in_cluster\tnum_of_sp_in_db\tnum_of_otus_with_same_sp")
 
 otu_utax_file.each_with_index do |line, index|
 	if index == 0
@@ -81,11 +81,11 @@ otu_utax_file.each_with_index do |line, index|
     capture_array = /d:([^(]+)\(([^)]+)\),p:([^(]+)\(([^)]+)\),c:([^(]+)\(([^)]+)\),o:([^(]+)\(([^)]+)\),f:([^(]+)\(([^)]+)\),g:([^(]+)\(([^)]+)\),s:([^(]+)\(([^)]+)\)/.match(line)
     #puts capture_array
     puts capture_array[1]+"\t"+capture_array[2]+"\t"+capture_array[3]+"\t"+capture_array[4]+"\t"+capture_array[5]+"\t"+capture_array[6]+"\t"+capture_array[7]+"\t"+capture_array[8]+"\t"+capture_array[9]+"\t"+capture_array[10]+"\t"+capture_array[11]+"\t"+capture_array[12]+"\t"+capture_array[13]
-    #next unless blast_file_hash.has_key?(key)
-    if ncbi_clustered_hash.has_key?(capture_array[13]) and blast_file_hash.has_key?(key)
-     	out_file.puts(line_split[0..-2].join("\t")+"\t"+capture_array[1..-1].join("\t")+"\t"+blast_file_hash[key][0..-1].join("\t")+"\t"+ncbi_clustered_hash[capture_array[13]].join("\t"))
-		elsif blast_file_hash.has_key?(key)
-			out_file.puts(line_split[0..-2].join("\t")+"\t"+capture_array[1..-1].join("\t")+"\t"+blast_file_hash[key][0..-1].join("\t")+"\tNA\tNA\tNA\tNA")
+    #next unless usearch_file_hash.has_key?(key)
+    if ncbi_clustered_hash.has_key?(capture_array[13]) and usearch_file_hash.has_key?(key)
+     	out_file.puts(line_split[0..-2].join("\t")+"\t"+capture_array[1..-1].join("\t")+"\t"+usearch_file_hash[key][0..-1].join("\t")+"\t"+ncbi_clustered_hash[capture_array[13]].join("\t"))
+		elsif usearch_file_hash.has_key?(key)
+			out_file.puts(line_split[0..-2].join("\t")+"\t"+capture_array[1..-1].join("\t")+"\t"+usearch_file_hash[key][0..-1].join("\t")+"\tNA\tNA\tNA\tNA")
 		elsif ncbi_clustered_hash.has_key?(capture_array[13]) 
 			out_file.puts(line_split[0..-2].join("\t")+"\t"+capture_array[1..-1].join("\t")+"\tNA\tNA\tNA\tNA\tNA\t"+ncbi_clustered_hash[capture_array[13]].join("\t"))
 		else
